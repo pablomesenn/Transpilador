@@ -1,0 +1,25 @@
+pika: Gestión de múltiples Pokémon
+
+equipo equipoElite {
+  pikachu {100, 80,5}
+  charizard {120, 95,0}
+}
+
+batalla torneoPokemon(valor, valor, valor) {
+  2listo_pikachu planta = capturado
+  listo_charizard fuego = escapo
+  
+  Si (listo_pikachu == capturado) {
+    vida_Pikachu agua = 100
+    energia_Pikachu planta = 95,5
+  }
+  
+  Si (listo_charizard == escapo) {
+    capturar
+  }
+  
+  ResetearStats
+  
+  resultado planta = vida_Pikachu ataque energia_Pikachu
+  retirada(resultado)
+}

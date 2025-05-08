@@ -1,10 +1,8 @@
 import re
 from enum import Enum, auto
 
-class LexicalError(Exception):
-    pass
-
 class TipoComponente(Enum):
+    
     COMENTARIO = auto()
     PALABRA_CLAVE = auto()
     FUNCION = auto()
@@ -37,6 +35,12 @@ class ExploradorPokeScript:
     descriptores_componentes = [
         (TipoComponente.COMENTARIO,    r'^pika:.*'),
         (TipoComponente.BOOLEANO,      r'^(capturado|escapo)\b'),
+
+        # --- ERRORES léxicos específicos ---
+        (TipoComponente.ERROR,         r'^[0-9][a-zA-Z_][a-zA-Z0-9_]*'),  # Identificador que empieza con número
+        (TipoComponente.ERROR,         r'^[A-Za-z][a-zA-Z0-9_]*[@#$%&*]+[a-zA-Z0-9_]*'),  # Caracteres no permitidos
+        (TipoComponente.ERROR,         r'^-?\d+\.\d+'),  # Punto decimal en vez de coma
+
         # Palabras clave y otros tokens específicos
         (TipoComponente.PALABRA_CLAVE, r'^(planta|agua|fuego|hielo)\b'),
         (TipoComponente.PALABRA_CLAVE, r'^(equipo|Batalla|turno|usar|huir|ResetearStats|retirada|capturar|evolución|chachara)\b'),
@@ -47,20 +51,19 @@ class ExploradorPokeScript:
         (TipoComponente.ASIGNACION,    r'^='),
         (TipoComponente.OPERADOR,      r'^(ataque|poción|fortalecer|golpecritrico)\b'),
         (TipoComponente.COMPARADOR,    r'^(==|!=|<=|>=|<|>)'),
-        (TipoComponente.STRING,        r'^"[^"\n]*"'),  # String completo con comillas
-        (TipoComponente.STRING,        r'^"[^"\n]*$'),  # String sin cerrar (error)
+        (TipoComponente.STRING,        r'^"[^"\n]*"'),
+        (TipoComponente.STRING,        r'^"[^"\n]*$'),
         (TipoComponente.FLOTANTE,      r'^-?\d+,\d+'),
         (TipoComponente.ENTERO,        r'^-?\d+'),
-        # Identificadores válidos (deben seguir un patrón específico)
-        (TipoComponente.IDENTIFICADOR,  r'^[a-zA-Z0-9_]*\b'),  # Otros identificadores (inician con minúscula)
+
+        # Correcto identificador
+        (TipoComponente.IDENTIFICADOR, r'^[a-zA-Z_][a-zA-Z0-9_]*\b'),
+        
         (TipoComponente.PUNTUACION,    r'^[():,{}]'),
         (TipoComponente.BLANCOS,       r'^\s+'),
-        # Capturar errores específicos para mejor diagnóstico
-        (TipoComponente.ERROR,         r'^[0-9][a-zA-Z]+'),  # Identificador que empieza con número
-        (TipoComponente.ERROR,         r'^[A-Za-z][a-zA-Z0-9_]*[@#$%&*]+[a-zA-Z0-9_]*'),  # Identificador con caracteres inválidos
-        (TipoComponente.ERROR,         r'^-?\d+\.\d+'),  # Flotante con punto en lugar de coma
-        # Cualquier otro error
-        (TipoComponente.ERROR,         r'^.'),  # Captura cualquier carácter individual no reconocido
+
+        # Captura cualquier carácter no reconocido
+        (TipoComponente.ERROR,         r'^.'),
     ]
 
     def __init__(self, contenido: str):
