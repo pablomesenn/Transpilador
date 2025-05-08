@@ -6,6 +6,7 @@ class TipoNodo(Enum):
     """
     Describe los tipos de nodo presentes en el ASA 
     """
+    
 
     PROGRAMA = auto()
     ASIGNACION  = auto()
@@ -31,7 +32,6 @@ class TipoNodo(Enum):
     #BLOQUE_INSTRUCCIONES = auto()
     STRING = auto()
     BOOLEANOS = auto()
-    COMPARADOR = auto()
     ENTERO = auto()
     FLOTANTE = auto()
     IDENTIFICADOR = auto()
