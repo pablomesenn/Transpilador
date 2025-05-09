@@ -95,14 +95,32 @@ class NodoArbol():
 class ArbolSintaxisAbstracta:
     
     raiz : NodoArbol
+    def __init__(self):
+        """
+        Inicializa el árbol sintáctico abstracto.
+        """
+        self.raiz = None
+
+    def insertar_nodo(self, nodo_padre: NodoArbol, nuevo_nodo: NodoArbol):
+        """
+        Inserta un nodo como hijo de otro nodo.
+        Si el nodo raíz aún no existe, se establece como la raíz.
+        """
+        if self.raiz is None:
+            self.raiz = nuevo_nodo
+        elif nodo_padre:
+            nodo_padre.nodos.append(nuevo_nodo)
 
     def imprimir_preorden(self):
-        self.__preorden(self.raiz)
+        visitados = set()
+        self.__preorden(self.raiz,visitados)
 
-    def __preorden(self, nodo):
+    def __preorden(self, nodo, visitados):
+        if nodo is not None and id(nodo) not in visitados:
+            visitados.add(id(nodo))
+            print(nodo.nodeToStr())
+            for hijo in nodo.nodos:
+                self.__preorden(hijo, visitados)
 
-        print(nodo)
 
-        if nodo is not None:
-            for nodo in nodo.nodos:
-                self.__preorden(nodo)
+    
