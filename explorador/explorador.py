@@ -9,6 +9,7 @@ class TipoComponente(Enum):
     CONDICIONAL = auto()
     REPETICION = auto()
     ASIGNACION = auto()
+    TIPO = auto()
     OPERADOR = auto()
     COMPARADOR = auto()
     ENTERO = auto()
@@ -42,7 +43,7 @@ class ExploradorPokeScript:
         (TipoComponente.ERROR,         r'^-?\d+\.\d+'),  # Punto decimal en vez de coma
 
         # Palabras clave y otros tokens específicos
-        (TipoComponente.PALABRA_CLAVE, r'^(planta|agua|fuego|hielo)\b'),
+        (TipoComponente.TIPO,          r'^(planta|agua|fuego|hielo)\b'),
         (TipoComponente.PALABRA_CLAVE, r'^(equipo|Batalla|turno|usar|huir|ResetearStats|retirada|capturar|evolución|chachara|teElijo)\b'),
         (TipoComponente.PALABRA_CLAVE, r'^(vida_[a-zA-Z0-9_]+|energia_[a-zA-Z0-9_]+)\b'),
         (TipoComponente.FUNCION,       r'^(batalla)\b'),

@@ -53,22 +53,20 @@ class AnalizadorLexico:
 
         while True:
             
-            """
-            EL BUCLE ANALIZA LA PARTE: (Comentario | Asignación | Función | Equipo)*
-            """
+            # EL BUCLE ANALIZA LA PARTE: (Comentario | Asignación | Función | Equipo)*
 
             # ASIGNACIÓN
             if self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
-                nodos_nuevos.append(self.analizar_asignacion()) 
+                nodos_nuevos.append([self.analizar_asignacion()]) 
             
             # FUNCION
             elif self.componente_actual.tipo == TipoComponente.FUNCION:
-                nodos_nuevos.append(self.analizar_funcion())
+                nodos_nuevos.append([self.analizar_funcion()])
 
             # EQUIPO
             elif self.componente_actual.texto == "equipo":
-                nodos_nuevos.append(self.analizar_equipo())
-            
+                nodos_nuevos.append([self.analizar_equipo()])
+
             else:
                 break
         
@@ -87,7 +85,24 @@ class AnalizadorLexico:
         Asignacion ::= Identificador Tipo = (Literal | Expresión | Invocación)
         """
 
+        nodos_nuevos = []
+
+        # El identificador es obligatorio al incio
+        nodos_nuevos.append([self.verificar_identificador()])
+
+        # Verificar el tipo
+        nodos_nuevos.append([self.verificar_tipo()])
+
+        # Verificar el signo de igual
+        self.verificar("=")
+        
+        # TODO: AHORA TOCA ANALIZAR EL LADO DERECHO DE LA ASIGNACIÓN: (Literal | Expresión | Invocación)
+        # ! Hay que tener cuidado con la Expresión, tal vez sea necesario cambiarla
+
+
+
         pass
+
 
     def analizar_funcion(self):
 
@@ -99,10 +114,64 @@ class AnalizadorLexico:
     def analizar_principal(self):
         pass
 
+    def verificar_identificador(self):
+        
+        """
+        Verifica que el componente actual sea un identificador.
+        Si no lo es, lanza una excepción.
+        """
+
+        self.verificar_tipo_componente(TipoComponente.IDENTIFICADOR)
+
+        # Agregar el nodo al árbol
+        nodo = NodoArbol(TipoNodo.IDENTIFICADOR, contenido = self.componente_actual.texto)
+
+        # Pasar al siguiente componente
+        self.__pasar_siguiente_componente()
+
+        return nodo
+
+    def verificar_tipo(self):
+        
+        """
+        Verifica que el componente actual sea un tipo.
+        Si no lo es, lanza una excepción.
+        """
+
+        self.verificar_tipo_componente(TipoComponente.TIPO)
+
+        # Agregar el nodo al árbol
+        nodo = NodoArbol(TipoNodo.TIPO, contenido = self.componente_actual.texto)
+
+        # Pasar al siguiente componente
+        self.__pasar_siguiente_componente()
+
+        return nodo
+
+    # FUNCIONES AUXILIARES
+
+    def verificar(self, string: str):
+
+        """
+        Verifica si el texto del componente léxico actual corresponde con
+        el esperado cómo argumento
+        """
+
+        if self.componente_actual.texto != string:
+            raise Exception(f"Error de sintaxis: Se esperaba '{string}', pero se encontró '{self.componente_actual.texto}'")
+
+    def verificar_tipo_componente(self, tipo: TipoComponente):
+        """
+        Verifica que el componente actual sea del tipo esperado.
+        Si no lo es, lanza una excepción.
+        """
+
+        if self.componente_actual.tipo != tipo:
+            raise Exception(f"Error de sintaxis: Se esperaba un componente de tipo '{tipo}', pero se encontró '{self.componente_actual.texto}'")
+
     def __pasar_siguiente_componente(self):
 
         self.posicion += 1
 
         if self.posicion >= self.cantidad_componentes:
             return
-    
