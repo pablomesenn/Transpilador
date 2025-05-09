@@ -43,7 +43,7 @@ class ExploradorPokeScript:
 
         # Palabras clave y otros tokens específicos
         (TipoComponente.PALABRA_CLAVE, r'^(planta|agua|fuego|hielo)\b'),
-        (TipoComponente.PALABRA_CLAVE, r'^(equipo|Batalla|turno|usar|huir|ResetearStats|retirada|capturar|evolución|chachara)\b'),
+        (TipoComponente.PALABRA_CLAVE, r'^(equipo|Batalla|turno|usar|huir|ResetearStats|retirada|capturar|evolución|chachara|teElijo)\b'),
         (TipoComponente.PALABRA_CLAVE, r'^(vida_[a-zA-Z0-9_]+|energia_[a-zA-Z0-9_]+)\b'),
         (TipoComponente.FUNCION,       r'^(batalla)\b'),
         (TipoComponente.CONDICIONAL,   r'^(Si|Sinnoh)\b'),

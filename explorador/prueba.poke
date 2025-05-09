@@ -23,3 +23,5 @@ batalla torneoPokemon(valor, valor, valor) {
   resultado planta = vida_Pikachu ataque energia_Pikachu
   retirada(resultado)
 }
+
+teElijo torneoPokemon(valor1, valor2, valor3)

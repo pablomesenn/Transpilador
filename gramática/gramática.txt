@@ -1,0 +1,70 @@
+Programa          ::= (Comentario | Asignación | Función | Equipo)* Principal
+
+Comentario        ::= pika: String
+
+Asignación        ::= Identificador Tipo = (Literal | Expresión | Invocación)
+
+AsignaciónGlobal  ::= Salvaje Asignación
+
+Tipo              ::= planta | fuego | agua | hielo
+
+Expresión         ::= Expresión Operador Expresión
+                   | (Expresión) 
+                   | Literal
+                   | Identificador
+                   | Invocación
+
+Operador          ::= (ataque | poción | fortalecer | golpecritrico)
+
+Función           ::= batalla Identificador (Parámetros) { Instrucción* }
+
+Invocación        ::= teElijo Identificador (Parámetros)
+
+Parámetros        ::= Valor (',' Valor)*
+
+Instrucción       ::= Repetición 
+                   | Bifurcación 
+                   | Asignación 
+                   | Retorno 
+                   | Error 
+                   | Comentario
+
+Repetición        ::= turnos (Condición | Entero) { Instrucción* }
+
+Bifurcación       ::= Si (Sinnoh)?
+
+Si                ::= Si (Condición) { Instrucción* }
+
+Sinnoh            ::= Sinnoh { Instrucción* }
+
+Principal         ::= teReto! { Instrucción* } I
+
+Condición         ::= Comparación ((and | or) Comparación)*
+
+Comparación       ::= Valor Comparador Valor
+
+Valor             ::= (Identificador | Literal)
+
+Retorno           ::= retirada (Valor | 0)
+
+Literal           ::= Número | String | Booleano 
+
+Número            ::= Entero | Flotante
+
+String            ::= "(\w(\s\w))"
+
+Booleanos         ::= capturado | escapó
+
+Entero            ::= -?[0-9]+
+
+Flotante          ::= -?[0-9]+','[0-9]+
+
+Identificador     ::= [A-Za-z_][A-Za-z0-9_]*
+
+Comparador        ::= '==' | '!=' | '<' | '>' | '<=' | '>='
+
+Equipo            ::= equipo Identificador {Pokemon{1,6}}
+
+Pokemon           ::= NombrePokemon {Entero, Float}
+
+NombrePokemon    ::= [A-Za-z][A-Za-z0-9_-]+  

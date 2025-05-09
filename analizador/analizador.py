@@ -5,7 +5,7 @@ class AnalizadorLexico:
     
     """
     Clase que representa el analizador léxico. 
-    Se encarga de leer el código fuente y generar el árbol de sintáxis abstracto.
+    Se encarga de procesar los componentes léxicos y generar el ASA.
     """
 
     componentes_lexicos: list
@@ -35,7 +35,7 @@ class AnalizadorLexico:
     def analizar(self):
 
         """
-        Método principal que inicia el análisis siguiendo el esquema de
+        Método principal que inicia el análisis siguiendo el algoritmo de
         análisis por descenso recursivo
         """
 
@@ -47,28 +47,57 @@ class AnalizadorLexico:
         Programa ::= (Comentario | Asignación | Función | Equipo )* Principal
         """
 
+        # El explorador no está procesando los comentarios?
+
         nodos_nuevos = []
 
         while True:
-            tipo = self.componente_actual.tipo
-            texto = self.componente_actual.texto
+            
+            """
+            EL BUCLE ANALIZA LA PARTE: (Comentario | Asignación | Función | Equipo)*
+            """
 
-            if tipo == TipoComponente.IDENTIFICADOR:
-                nodos_nuevos.append(self.__analizar_asignacion())
+            # ASIGNACIÓN
+            if self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
+                nodos_nuevos.append(self.analizar_asignacion()) 
+            
+            # FUNCION
+            elif self.componente_actual.tipo == TipoComponente.FUNCION:
+                nodos_nuevos.append(self.analizar_funcion())
 
-            elif tipo == TipoComponente.FUNCION:
-                nodos_nuevos.append(self.__analizar_funcion())
-
+            # EQUIPO
+            elif self.componente_actual.texto == "equipo":
+                nodos_nuevos.append(self.analizar_equipo())
+            
             else:
                 break
+        
+        # PRINCIPAL
+        if self.componente_actual.texto == "teReto!":
+            nodos_nuevos.append(self.analizar_principal())
+            
+        else:
+            raise Exception("Error de sintaxis: Se esperaba 'principal'")
 
-        return NodoArbol(TipoNodo.PROGRAMA, nodos=nodos_nuevos)
+        return NodoArbol(TipoNodo.PROGRAMA, nodos=nodos_nuevos) 
 
-    #def __analizar_asignacion(self):
+    def analizar_asignacion(self):
 
-    #def __analizar_funcion(self):
+        """
+        Asignacion ::= Identificador Tipo = (Literal | Expresión | Invocación)
+        """
 
-    #def __analizar_equipo(self): ?
+        pass
+
+    def analizar_funcion(self):
+
+        pass
+
+    def analizar_equipo(self):
+        pass
+
+    def analizar_principal(self):
+        pass
 
     def __pasar_siguiente_componente(self):
 
@@ -76,3 +105,4 @@ class AnalizadorLexico:
 
         if self.posicion >= self.cantidad_componentes:
             return
+    
