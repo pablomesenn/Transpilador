@@ -6,7 +6,6 @@ class TipoNodo(Enum):
     """
     Describe los tipos de nodo presentes en el ASA 
     """
-    
 
     PROGRAMA = auto()
     ASIGNACION  = auto()
@@ -50,19 +49,11 @@ class NodoArbol():
     contenido : str
     atributos : dict
 
-    def __init__(self, tipo, contenido = None, nodos = [], atributos= {}):
-
+    def __init__(self, tipo, contenido=None, nodos=None, atributos=None):
         self.tipo = tipo
         self.contenido = contenido
-        self.nodos = nodos
-        self.atributos = copy.deepcopy(atributos)
-
-    """ 
-    NO IMPLEMENTADO AÚN
-
-    def visitar(self, visitador):
-        return visitador.visitar(self)
-    """
+        self.nodos = nodos if nodos is not None else []
+        self.atributos = copy.deepcopy(atributos if atributos is not None else {})
 
     def nodeToStr(self):
         resultado = '{:30}\t'.format(self.tipo)
@@ -95,32 +86,55 @@ class NodoArbol():
 class ArbolSintaxisAbstracta:
     
     raiz : NodoArbol
+    
     def __init__(self):
+        
         """
         Inicializa el árbol sintáctico abstracto.
         """
+        
         self.raiz = None
 
     def insertar_nodo(self, nodo_padre: NodoArbol, nuevo_nodo: NodoArbol):
+        
         """
         Inserta un nodo como hijo de otro nodo.
         Si el nodo raíz aún no existe, se establece como la raíz.
         """
+
         if self.raiz is None:
             self.raiz = nuevo_nodo
         elif nodo_padre:
             nodo_padre.nodos.append(nuevo_nodo)
 
     def imprimir_preorden(self):
-        visitados = set()
-        self.__preorden(self.raiz,visitados)
+        self.__preorden(self.raiz, nivel=0)
 
-    def __preorden(self, nodo, visitados):
-        if nodo is not None and id(nodo) not in visitados:
-            visitados.add(id(nodo))
-            print(nodo.nodeToStr())
+    def __preorden(self, nodo, nivel):
+        if nodo is not None:
+            print("  " * nivel + nodo.nodeToStr())
             for hijo in nodo.nodos:
-                self.__preorden(hijo, visitados)
+                self.__preorden(hijo, nivel + 1)
 
+# PRUEBAS 
 
-    
+if __name__ == '__main__':
+    raiz = NodoArbol(TipoNodo.PROGRAMA, "Inicio")
+    hijo1 = NodoArbol(TipoNodo.ASIGNACION, "x = 1")
+    hijo2 = NodoArbol(TipoNodo.ASIGNACION, "y = 2")
+    hijo3 = NodoArbol(TipoNodo.EXPRESION, "x + y")
+    hijo4 = NodoArbol(TipoNodo.BOOLEANOS, "1")
+    hijo5 = NodoArbol(TipoNodo.COMPARACION, "2")
+    hijo6 = NodoArbol(TipoNodo.COMPARADOR, "3")
+
+    arbol = ArbolSintaxisAbstracta()
+    arbol.insertar_nodo(None, raiz)
+    arbol.insertar_nodo(raiz, hijo1)
+    arbol.insertar_nodo(raiz, hijo2)
+    arbol.insertar_nodo(raiz, hijo3)
+    arbol.insertar_nodo(hijo1, hijo4)
+    arbol.insertar_nodo(hijo2, hijo5)
+    arbol.insertar_nodo(hijo3, hijo6)
+
+    arbol.imprimir_preorden()
+ 
