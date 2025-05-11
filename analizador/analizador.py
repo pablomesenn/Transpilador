@@ -202,9 +202,45 @@ class AnalizadorLexico:
 
     
     def analizar_equipo(self):
+        """
+        Equipo::= equipo Identificador {Pokemon{1,6}}
+        """
         nodos_nuevos = []
 
+        self.verificar("equipo")
+        nodos_nuevos += self.verificar_identificador()
+        self.verificar("{")
+        # Verificar que haya entre 1 y 6 pokemones
+        for i in range(7):
+            if i == 6:
+                raise Exception("Error de sintaxis: Un equipo no puede tener más de 6 Pokémon.")
+            if self.componente_actual.tipo == TipoComponente.NOMBRE_POKEMON:
+                nodos_nuevos += (self.analizar_pokemon())
+            else:
+                if i == 0:
+                    raise Exception("Error de sintaxis: Se esperaba al menos un Pokémon.")
+                break
+
+
+
         return NodoArbol(TipoNodo.EQUIPO, nodos=nodos_nuevos)
+    
+    def analizar_pokemon(self):
+        """
+        Pokemon::= NombrePokemon {Entero, Float}
+        """
+        nodos_nuevos = []
+        # Verificar el nombre del Pokémon
+        self.verificar_tipo_componente(TipoComponente.NOMBRE_POKEMON)
+        nodos_nuevos.append(NodoArbol(TipoNodo.NOMBRE_POKEMON, contenido=self.componente_actual.texto))
+        self.__pasar_siguiente_componente()
+        self.verificar("{")
+        nodos_nuevos.append(self.verificar_enteros())
+        nodos_nuevos.append(self.verificar_flotantes())
+        self.verificar("}")
+        return NodoArbol(TipoNodo.POKEMON, nodos=nodos_nuevos)
+    
+
 
     def analizar_principal(self):
         
@@ -345,6 +381,38 @@ class AnalizadorLexico:
 
     # FUNCIONES AUXILIARES
 
+    def verificar_enteros(self):
+        """
+        Verifica que el componente actual sea un entero.
+        Si no lo es, lanza una excepción.
+        """
+
+        self.verificar_tipo_componente(TipoComponente.ENTERO)
+
+        # Agregar el nodo al árbol
+        nodo = NodoArbol(TipoNodo.ENTERO, contenido = self.componente_actual.texto)
+
+        # Pasar al siguiente componente
+        self.__pasar_siguiente_componente()
+
+        return nodo
+    
+    def verificar_flotantes(self):
+        """
+        Verifica que el componente actual sea un flotante.
+        Si no lo es, lanza una excepción.
+        """
+
+        self.verificar_tipo_componente(TipoComponente.FLOTANTE)
+
+        # Agregar el nodo al árbol
+        nodo = NodoArbol(TipoNodo.FLOTANTE, contenido = self.componente_actual.texto)
+
+        # Pasar al siguiente componente
+        self.__pasar_siguiente_componente()
+
+        return nodo
+
     def verificar(self, string: str):
 
         """
@@ -364,7 +432,7 @@ class AnalizadorLexico:
         """
 
         if self.componente_actual.tipo != tipo:
-            raise Exception(f"Error de sintaxis: Se esperaba un componente de tipo '{tipo}', pero se encontró '{self.componente_actual.texto}'")
+            raise Exception(f"Error de sintaxis: Se esperaba un componente de tipo '{tipo}', pero se encontró '{self.componente_actual.texto}'")   
 
     def __pasar_siguiente_componente(self):
 
