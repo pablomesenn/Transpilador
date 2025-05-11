@@ -28,7 +28,7 @@ class TipoNodo(Enum):
     COMPARACION = auto()
     RETORNO = auto()
     ERROR = auto()
-    #BLOQUE_INSTRUCCIONES = auto()
+    BLOQUE_INSTRUCCIONES = auto()
     STRING = auto()
     BOOLEANOS = auto()
     ENTERO = auto()
@@ -38,6 +38,7 @@ class TipoNodo(Enum):
     EQUIPO = auto()
     POKEMON = auto()
     NOMBRE_POKEMON = auto()
+    
 
 class NodoArbol():
     

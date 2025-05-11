@@ -170,9 +170,65 @@ class AnalizadorLexico:
     
     def analizar_funcion(self):
         pass
+        """
+        Función ::= batalla Identificador (Parámetros) { Instruccion*}
+        """
+        nodos_nuevos = []
 
+        self.verificar("batalla")
+        nodos_nuevos += [self.verificar_identificador()]
+        self.verificar("(") 
+        nodos_nuevos += [self.analizar_parametros()]
+        self.verificar(")")
+        nodos_nuevos += [self.analizar_bloque_instrucciones()]
+
+
+        return NodoArbol(TipoNodo.FUNCION, nodos=nodos_nuevos)
+    
+    def analizar_parametros(self):
+        """
+        Parámetros ::= Valor ("," Identificador)*
+        """
+        nodos_nuevos = []
+
+        nodos_nuevos.append(self.verificar_identificador())
+
+        while self.componente_actual.texto == ",":
+            self.verificar(",")
+            nodos_nuevos+= [self.verificar_identificador()]
+
+        return NodoArbol(TipoNodo.PARAMETROS, nodos=nodos_nuevos)
+    
+    def analizar_bloque_instrucciones(self):
+        self.verficar("{")
+        while True:
+            nodos_nuevos += [self.__analizar_instrucción()]
+            # si es Repeticion, bifurcacion, asignacion, retorno ¿error?
+            if not(self.componente_actual.texto in ['turnos', 'Si', 'retirada'] or self.componente_actual.tipo == TipoComponente.IDENTIFICADOR):
+                break
+        self.verficar("}")
+        return NodoArbol(TipoNodo.BLOQUE_INSTRUCCIONES, nodos=nodos_nuevos)
+        
+        
+    
+    def analizar_instruccion(self):
+        """
+        Instrucción ::= Repetición 
+                   | Bifurcación 
+                   | Asignación 
+                   | Retorno 
+                   | Error 
+                   | Comentario #no creo
+        """
+        nodos_nuevos = []
+
+        return NodoArbol(TipoNodo.INSTRUCCION, nodos=nodos_nuevos)
+
+    
     def analizar_equipo(self):
-        pass
+        nodos_nuevos = []
+
+        return NodoArbol(TipoNodo.EQUIPO, nodos=nodos_nuevos)
 
     def analizar_principal(self):
         
@@ -273,6 +329,9 @@ class AnalizadorLexico:
         
         nodos_nuevos = []
         pass
+        nodos_nuevos = []
+
+        return NodoArbol(TipoNodo.PRINCIPAL, nodos=nodos_nuevos)
 
     def verificar_identificador(self):
         
