@@ -72,7 +72,7 @@ class AnalizadorLexico:
         
         # PRINCIPAL
         if self.componente_actual.texto == "teReto!":
-            nodos_nuevos.append(self.analizar_principal())
+            nodos_nuevos.append([self.analizar_principal()])
             
         else:
             raise Exception("Error de sintaxis: Se esperaba 'principal'")
@@ -97,7 +97,7 @@ class AnalizadorLexico:
         # Verificar el signo de igual
         self.verificar("=")
 
-            # Caso 1: Literal (String, Entero, Flotante, Booleano)
+        # Caso 1: Literal (String, Entero, Flotante, Booleano)
         if (self.componente_actual.tipo == TipoComponente.STRING or 
             self.componente_actual.tipo == TipoComponente.ENTERO or 
             self.componente_actual.tipo == TipoComponente.FLOTANTE or 
@@ -169,13 +169,109 @@ class AnalizadorLexico:
     
     
     def analizar_funcion(self):
-
         pass
 
     def analizar_equipo(self):
         pass
 
     def analizar_principal(self):
+        
+        """
+        Principal ::= teReto! BloqueInstrucciones
+        """
+
+        nodos_nuevos = []
+
+        # Verificar el token "teReto!"
+        self.verificar('teReto!')
+
+        nodos_nuevos.append([self.analizar_bloque_instrucciones()])
+
+        return NodoArbol(TipoNodo.PRINCIPAL, nodos=nodos_nuevos)
+
+    def analizar_bloque_instrucciones(self):    
+        
+        """
+        Para factorizar código, viene como sugerencia en el analizador del profesor
+        
+        BloqueInstrucciones ::= { Instrucción* }
+        """
+        
+        nodos_nuevos = []
+
+        # Verificar el token '{'
+        self.verificar("{")
+
+        # Instrucciones dentro del bloque, pueden ser 0 o más
+        while self.componente_actual.texto in ['turnos', 'si', 'sinnoh', 'retirada'] or self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
+            nodos_nuevos.append([self.analizar_instruccion()])
+
+        # Verificar el token '}'
+        self.verificar("}")
+
+        return NodoArbol(TipoNodo.BLOQUE_INSTRUCCIONES, nodos=nodos_nuevos)
+
+    def analizar_instruccion(self):
+
+        """
+        Instrucción ::= (Repetición | Bifurcación | Asignación | Invoación | Retorno) 
+        """
+
+        nodos_nuevos = []
+
+        # Repetición
+        if self.componente_actual.texto == "turnos":
+            nodos_nuevos.append([self.analizar_repeticion()])
+
+        # Bifurcación
+        elif self.componente_actual.texto == "si":
+            nodos_nuevos.append([self.analizar_bifurcacion()])
+
+        # Asignación
+        elif self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
+            nodos_nuevos.append([self.analizar_asignacion()]) #! analizar_asignacion() o está en proceso, faltan pruebas
+
+        # Invocación
+        elif self.componente_actual.texto == "teElijo":
+            nodos_nuevos.append([self.analizar_invocacion()])
+
+        # Retorno
+        elif self.componente_actual.texto == "retirada":
+            nodos_nuevos.append([self.analizar_retirada()])
+
+        # Porta a mi los comentarios xD
+
+        #TODO: Aquí podría agregarse el nodo nodos_nuevos[0]
+        return NodoArbol(TipoNodo.INSTRUCCION, nodos=nodos_nuevos)
+
+    def analizar_repeticion(self):
+        
+        """
+        turnos (Condición | Entero) BloqueInstrucciones
+        """
+
+        nodos_nuevos = []
+
+        # Verificar el token "turnos"
+        self.verificar("turnos")
+        # Verificar token "("
+        self.verificar("(")
+        # Verificar la condición    
+        #if self.componente_actual.tipo == 
+
+    def analizar_bifurcacion(self):
+        
+        nodos_nuevos = []
+        pass
+
+    def analizar_invocacion(self):
+        
+        nodos_nuevos = []
+        pass
+
+    def analizar_retirada(self):
+        
+        nodos_nuevos = []
         pass
 
     def verificar_identificador(self):
@@ -223,6 +319,8 @@ class AnalizadorLexico:
 
         if self.componente_actual.texto != string:
             raise Exception(f"Error de sintaxis: Se esperaba '{string}', pero se encontró '{self.componente_actual.texto}'")
+
+        self.__pasar_siguiente_componente()
 
     def verificar_tipo_componente(self, tipo: TipoComponente):
         """

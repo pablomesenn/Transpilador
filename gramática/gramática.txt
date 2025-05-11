@@ -16,28 +16,29 @@ Expresión         ::= Expresión Operador Expresión
 
 Operador          ::= (ataque | poción | fortalecer | golpecritrico)
 
-Función           ::= batalla Identificador (Parámetros) { Instrucción* }
+Función           ::= batalla Identificador (Parámetros) BloqueInstrucciones
 
 Invocación        ::= teElijo Identificador (Parámetros)
 
 Parámetros        ::= Valor (',' Valor)*
 
-Instrucción       ::= Repetición 
+Instrucción       ::= (Repetición 
                    | Bifurcación 
                    | Asignación 
-                   | Retorno 
-                   | Error 
-                   | Comentario
+                   | Invocación
+                   | Retorno) 
 
-Repetición        ::= turnos (Condición | Entero) { Instrucción* }
+Repetición        ::= turnos (Condición | Entero) BloqueInstrucciones
 
 Bifurcación       ::= Si (Sinnoh)?
 
-Si                ::= Si (Condición) { Instrucción* }
+Si                ::= Si (Condición) BloqueInstrucciones
 
-Sinnoh            ::= Sinnoh { Instrucción* }
+Sinnoh            ::= Sinnoh BloqueInstrucciones
 
-Principal         ::= teReto! { Instrucción* } I
+Principal         ::= teReto! BloqueInstrucciones 
+
+BloqueInstrucciones ::= { Instrucción* }
 
 Condición         ::= Comparación ((and | or) Comparación)*
 
