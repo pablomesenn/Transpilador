@@ -80,23 +80,26 @@ class AnalizadorLexico:
         return NodoArbol(TipoNodo.PROGRAMA, nodos=nodos_nuevos) 
 
     def analizar_asignacion(self):
-        #! falta testear
-
         """
         Asignacion ::= Identificador Tipo = (Literal | Expresión | Invocación)
         """
-
+        # Lista para almacenar los nodos hijos de la asignación
         nodos_nuevos = []
 
-        # El identificador es obligatorio al incio
-        nodos_nuevos.append([self.verificar_identificador()])
+        # El identificador es obligatorio al inicio
+        identificador = self.verificar_identificador()
+        nodos_nuevos.append(identificador)
 
         # Verificar el tipo
-        nodos_nuevos.append([self.verificar_tipo()])
-        
+        tipo = self.verificar_tipo()
+        nodos_nuevos.append(tipo)
+
         # Verificar el signo de igual
         self.verificar("=")
-
+        
+        # Analizar el lado derecho de la asignación: (Literal | Expresión | Invocación)
+        # Verificamos qué tipo de valor tenemos a la derecha
+        
         # Caso 1: Literal (String, Entero, Flotante, Booleano)
         if (self.componente_actual.tipo == TipoComponente.STRING or 
             self.componente_actual.tipo == TipoComponente.ENTERO or 
@@ -121,52 +124,126 @@ class AnalizadorLexico:
         return NodoArbol(TipoNodo.ASIGNACION, nodos=nodos_nuevos)
 
     def analizar_expresion(self):
-        # ! Esta implementacion es para darnos una idea, aun falta testearla, puede ocupar cambios en la gramatica
-        """
-        Expresión ::= Expresión Operador Expresión
-                | (Expresión) 
-                | Literal
-                | Identificador
-                | Invocación
             """
+            Expresión simplificada ::= Término (Operador Término)*
+            Término ::= Literal | Identificador | Invocación
+            """
+            # Analizamos el primer término
+            termino_izquierdo = self.analizar_termino()
+            
+            # Nodo inicial de la expresión
+            nodo_expresion = NodoArbol(TipoNodo.EXPRESION, nodos=[termino_izquierdo])
+            
+            # Si después del término hay un operador, continuamos analizando la expresión
+            while (self.componente_actual and 
+                self.componente_actual.tipo == TipoComponente.OPERADOR):
+                
+                # Crear nodo para el operador
+                operador = NodoArbol(TipoNodo.OPERADOR, contenido=self.componente_actual.texto)
+                self.__pasar_siguiente_componente()
+                
+                # Analizar el término derecho
+                termino_derecho = self.analizar_termino()
+                
+                # Actualizar el nodo de expresión para incluir el operador y el término derecho
+                nodo_expresion.nodos.append(operador)
+                nodo_expresion.nodos.append(termino_derecho)
+            return nodo_expresion    
         
-        # Caso simple: Si es un identificador
+
+    def analizar_termino(self):
+            """
+            Término ::= Literal | Identificador | Invocación
+            """
+            # Caso 1: Si es un identificador
+            if self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
+                return self.verificar_identificador()
+            
+            # Caso 2: Si es un literal (entero, flotante, string, booleano)
+            elif (self.componente_actual.tipo == TipoComponente.STRING or 
+                self.componente_actual.tipo == TipoComponente.ENTERO or 
+                self.componente_actual.tipo == TipoComponente.FLOTANTE or 
+                self.componente_actual.tipo == TipoComponente.BOOLEANO):
+                
+                tipo_nodo = self._convertir_tipo_componente_a_tipo_nodo(self.componente_actual.tipo)
+                literal = NodoArbol(tipo_nodo, contenido=self.componente_actual.texto)
+                self.__pasar_siguiente_componente()
+                return literal
+            
+            # Caso 3: Invocación
+            elif self.componente_actual.texto == "teElijo":
+                return self.analizar_invocacion()
+            
+            else:
+                raise Exception(f"Error de sintaxis: Se esperaba un término válido, pero se encontró '{self.componente_actual.texto}'")
+
+    def analizar_invocacion(self):
+        """
+        Invocación ::= teElijo Identificador (Parámetros)
+        """
+        # Verificar que comience con "teElijo"
+        self.verificar("teElijo")
+        self.__pasar_siguiente_componente()
+        
+        # Obtener el identificador
+        identificador = self.verificar_identificador()
+        
+        # Verificar el paréntesis de apertura
+        self.verificar("(")
+        self.__pasar_siguiente_componente()
+        
+        # Analizar los parámetros
+        parametros = self.analizar_parametros()
+        
+        # Verificar el paréntesis de cierre
+        self.verificar(")")
+        self.__pasar_siguiente_componente()
+        
+        # Crear y devolver el nodo de invocación
+        return NodoArbol(TipoNodo.INVOCACION, nodos=[identificador, parametros])
+
+    def analizar_parametros(self):
+        """
+        Parámetros ::= Valor (',' Valor)*
+        """
+        parametros = []
+        
+        # Si no hay parámetros (cierre inmediato)
+        if self.componente_actual.texto == ")":
+            return NodoArbol(TipoNodo.PARAMETROS, nodos=parametros)
+        
+        # Analizar el primer valor
+        parametros.append(self.analizar_valor())
+        
+        # Mientras encontremos comas, analizar más valores
+        while self.componente_actual.texto == ",":
+            self.__pasar_siguiente_componente()  # Consumir ','
+            parametros.append(self.analizar_valor())
+        
+        return NodoArbol(TipoNodo.PARAMETROS, nodos=parametros)
+
+    def analizar_valor(self):
+        """
+        Valor ::= (Identificador | Literal)
+        """
+        # Si es un identificador
         if self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
-            identificador = self.verificar_identificador()
-            return NodoArbol(TipoNodo.EXPRESION, nodos=[identificador])
+            return self.verificar_identificador()
         
-        # Caso simple: Si es un literal (entero, flotante, string, booleano)
+        # Si es un literal (entero, flotante, string, booleano)
         elif (self.componente_actual.tipo == TipoComponente.STRING or 
             self.componente_actual.tipo == TipoComponente.ENTERO or 
             self.componente_actual.tipo == TipoComponente.FLOTANTE or 
             self.componente_actual.tipo == TipoComponente.BOOLEANO):
             
             tipo_nodo = self._convertir_tipo_componente_a_tipo_nodo(self.componente_actual.tipo)
-            literal = NodoArbol(tipo_nodo, contenido=self.componente_actual.texto)
+            valor = NodoArbol(tipo_nodo, contenido=self.componente_actual.texto)
             self.__pasar_siguiente_componente()
-            return NodoArbol(TipoNodo.EXPRESION, nodos=[literal])
+            return valor
         
-        # Caso expresión entre paréntesis
-        elif self.componente_actual.texto == "(":
-            self.__pasar_siguiente_componente()  # Consumir '('
-            expresion = self.analizar_expresion()
-            
-            if self.componente_actual.texto != ")":
-                raise Exception(f"Error de sintaxis: Se esperaba ')', pero se encontró '{self.componente_actual.texto}'")
-            
-            self.__pasar_siguiente_componente()  # Consumir ')'
-            return expresion
-        
-        # Caso invocación
-        elif self.componente_actual.texto == "teElijo":
-            invocacion = self.analizar_invocacion()
-            return NodoArbol(TipoNodo.EXPRESION, nodos=[invocacion])
-        
-        # En un analizador más completo, aquí se manejaría la precedencia de operadores
-        # y la construcción de expresiones complejas
         else:
-            raise Exception(f"Error de sintaxis: Expresión inválida iniciando con '{self.componente_actual.texto}'")
-    
+            raise Exception(f"Error de sintaxis: Se esperaba un identificador o un literal, pero se encontró '{self.componente_actual.texto}'")
+        
     
     def analizar_funcion(self):
         pass

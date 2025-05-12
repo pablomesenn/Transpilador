@@ -8,11 +8,9 @@ AsignaciónGlobal  ::= Salvaje Asignación
 
 Tipo              ::= planta | fuego | agua | hielo
 
-Expresión         ::= Expresión Operador Expresión
-                   | (Expresión) 
-                   | Literal
-                   | Identificador
-                   | Invocación
+Expresión simplificada ::= Término (Operador Término)*
+
+Término ::= Literal | Identificador | Invocación
 
 Operador          ::= (ataque | poción | fortalecer | golpecritrico)
 
