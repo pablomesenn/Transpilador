@@ -11,6 +11,7 @@ class TipoComponente(Enum):
     ASIGNACION = auto()
     TIPO = auto()
     OPERADOR = auto()
+    OPERADOR_LOGICO = auto()
     COMPARADOR = auto()
     ENTERO = auto()
     FLOTANTE = auto()
@@ -56,6 +57,7 @@ class ExploradorPokeScript:
         (TipoComponente.STRING,        r'^"[^"\n]*$'),
         (TipoComponente.FLOTANTE,      r'^-?\d+,\d+'),
         (TipoComponente.ENTERO,        r'^-?\d+'),
+        (TipoComponente.OPERADOR_LOGICO, r'^(and|or)\b'),
 
         # Correcto identificador
         (TipoComponente.IDENTIFICADOR, r'^[a-zA-Z_][a-zA-Z0-9_]*\b'),

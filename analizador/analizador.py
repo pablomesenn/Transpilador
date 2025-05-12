@@ -72,7 +72,7 @@ class AnalizadorLexico:
         
         # PRINCIPAL
         if self.componente_actual.texto == "teReto!":
-            nodos_nuevos.append([self.analizar_principal()])
+                 ppend([self.analizar_principal()])
             
         else:
             raise Exception("Error de sintaxis: Se esperaba 'principal'")
@@ -275,8 +275,6 @@ class AnalizadorLexico:
             nodos_nuevos+= [self.verificar_identificador()]
 
         return NodoArbol(TipoNodo.PARAMETROS, nodos=nodos_nuevos)
-        
-
     
     def analizar_equipo(self):
         """
@@ -298,8 +296,6 @@ class AnalizadorLexico:
                     raise Exception("Error de sintaxis: Se esperaba al menos un Pokémon.")
                 break
 
-
-
         return NodoArbol(TipoNodo.EQUIPO, nodos=nodos_nuevos)
     
     def analizar_pokemon(self):
@@ -317,7 +313,6 @@ class AnalizadorLexico:
         self.verificar("}")
         return NodoArbol(TipoNodo.POKEMON, nodos=nodos_nuevos)
     
-
 
     def analizar_principal(self):
         
@@ -392,7 +387,7 @@ class AnalizadorLexico:
     def analizar_repeticion(self):
         
         """
-        turnos (Condición | Entero) BloqueInstrucciones
+        Repetición ::= turnos (Condición) BloqueInstrucciones
         """
 
         nodos_nuevos = []
@@ -402,13 +397,174 @@ class AnalizadorLexico:
         # Verificar token "("
         self.verificar("(")
         # Verificar la condición    
-        #if self.componente_actual.tipo == 
+        nodos_nuevos.append([self.analizar_condicion()])
+        # Verificar token ")"
+        self.verificar(")")
+
+        # Analizar el bloque de instrucciones
+        nodos_nuevos.append([self.analizar_bloque_instrucciones()])
+
+        return NodoArbol(TipoNodo.REPETICION, nodos=nodos_nuevos)
 
     def analizar_bifurcacion(self):
         
-        nodos_nuevos = []
-        pass
+        """
+        Bifurcación ::= Si (Sinnoh)?
+        """
 
+        nodos_nuevos = []
+
+        # La regla "si" es obligatorio
+        nodos_nuevos.append([self.analizar_si()])
+        # Si hay un "sinnoh" opcional
+        if self.componente_actual.texto == "sinnoh":
+            nodos_nuevos.append([self.analizar_sinnoh()])
+
+        return NodoArbol(TipoNodo.BIFURCACION, nodos=nodos_nuevos)
+
+    def analizar_si(self):
+        
+        """
+        Si ::= si (Condición) BloqueInstrucciones
+        """
+
+        nodos_nuevos = []
+
+        # Verificar el token "si"
+        self.verificar("si")
+        # Verificar token "("
+        self.verificar("(")
+        # Verificar la condición    
+        nodos_nuevos.append([self.analizar_condicion()])
+        # Verificar token ")"
+        self.verificar(")")
+
+        # Analizar el bloque de instrucciones
+        nodos_nuevos.append([self.analizar_bloque_instrucciones()])
+
+        return NodoArbol(TipoNodo.SI, nodos=nodos_nuevos)
+
+    def analizar_sinnoh(self):
+        """
+        Sinnoh ::= sinnoh BloqueInstrucciones
+        """
+
+        nodos_nuevos = []
+
+        # Verificar el token "sinnoh"
+        self.verificar("sinnoh")
+
+        # Analizar el bloque de instrucciones
+        nodos_nuevos.append([self.analizar_bloque_instrucciones()])
+
+        return NodoArbol(TipoNodo.SINNOH, nodos=nodos_nuevos)
+
+    def analizar_condicion(self):
+        
+        """
+        Condición ::= Comparación (OperadorLógico Comparación)*
+        """
+
+        nodos_nuevos = []
+
+        # Verificar la comparación
+        nodos_nuevos.append([self.analizar_comparacion()])
+        
+        # Verificar el operador lógico
+        while self.componente_actual.tipo == TipoComponente.OPERADOR_LOGICO:
+            
+            nodos_nuevos.append([self.analizar_operador_logico()])
+            # Verificar la comparación
+            nodos_nuevos.append([self.analizar_comparacion()])
+        
+        return NodoArbol(TipoNodo.CONDICION, nodos=nodos_nuevos)
+
+    def analizar_comparacion(self):
+        
+        """
+        Comparación ::= Valor Comparador Valor
+        """ 
+        
+        nodos_nuevos = []
+
+        # Verificar el primer valor
+        nodos_nuevos.append([self.analizar_valor])
+        # Verificar el comparador
+        nodos_nuevos.append([self.analizar_comparador()])
+        # Verificar el segundo valor
+        nodos_nuevos.append([self.analizar_valor()])
+
+        return NodoArbol(TipoNodo.COMPARACION, nodos=nodos_nuevos)
+
+    def analizar_operador_logico(self):
+        
+        """
+        OperadorLógico ::= and | or
+        """
+
+        # Verificar el operador lógico
+        self.verificar_tipo_componente(TipoComponente.OPERADOR_LOGICO)
+
+        # Agregar el nodo al árbol
+        nodo = NodoArbol(TipoNodo.OPERADOR_LOGICO, contenido=self.componente_actual.texto)
+
+        # Pasar al siguiente componente
+        self.__pasar_siguiente_componente()
+
+        return nodo
+
+    def analizar_valor(self):
+
+        """
+        Valor ::= (Identificador | Literal)
+        """ 
+
+        # Es un identificador o un literal
+        if self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
+            nodo = [self.verificar_identificador()]
+        else:
+            nodo = [self.analizar_literal()]
+
+        return nodo
+
+    def analizar_literal(self):
+        
+        """
+        Literal ::= Entero | Flotante | String | Booleano 
+        """
+
+        if self.componente_actual.tipo == TipoComponente.ENTERO:
+            return self.verificar_enteros()
+
+        elif self.componente_actual.tipo == TipoComponente.FLOTANTE:
+            return self.verificar_flotantes()
+        
+        elif self.componente_actual.tipo == TipoComponente.STRING:
+            return self.verificar_string()
+        
+        elif self.componente_actual.tipo == TipoComponente.BOOLEANO:
+            return self.verificar_booleano()
+        
+        else:
+            raise Exception(f"Error de sintaxis: Se esperaba un literal, pero se encontró '{self.componente_actual.texto}'")
+
+    def analizar_comparador(self):
+        
+        """
+        Comparador ::= '==' | '!=' | '<' | '>' | '<=' | '>='
+        """
+
+        # Verificar el comparador
+        self.verificar_tipo_componente(TipoComponente.COMPARADOR)
+
+        # Agregar el nodo al árbol
+        nodo = NodoArbol(TipoNodo.COMPARADOR, contenido=self.componente_actual.texto)
+
+        # Pasar al siguiente componente
+        self.__pasar_siguiente_componente()
+
+        return nodo
+    
     def analizar_invocacion(self):
         
         nodos_nuevos = []
@@ -418,9 +574,6 @@ class AnalizadorLexico:
         
         nodos_nuevos = []
         pass
-        nodos_nuevos = []
-
-        return NodoArbol(TipoNodo.PRINCIPAL, nodos=nodos_nuevos)
 
     def verificar_identificador(self):
         
@@ -457,6 +610,40 @@ class AnalizadorLexico:
         return nodo
 
     # FUNCIONES AUXILIARES
+
+    def verificar_string(self):
+
+        """
+        Verifica que el componente actual sea un string.
+        Si no lo es, lanza una excepción.
+        """
+
+        self.verificar_tipo_componente(TipoComponente.STRING)
+
+        # Agregar el nodo al árbol
+        nodo = NodoArbol(TipoNodo.STRING, contenido = self.componente_actual.texto)
+
+        # Pasar al siguiente componente
+        self.__pasar_siguiente_componente()
+
+        return nodo
+    
+    def verificar_booleano(self):
+
+        """
+        Verifica que el componente actual sea un booleano.
+        Si no lo es, lanza una excepción.
+        """
+
+        self.verificar_tipo_componente(TipoComponente.BOOLEANO)
+
+        # Agregar el nodo al árbol
+        nodo = NodoArbol(TipoNodo.BOOLEANO, contenido = self.componente_actual.texto)
+
+        # Pasar al siguiente componente
+        self.__pasar_siguiente_componente()
+
+        return nodo
 
     def verificar_enteros(self):
         """

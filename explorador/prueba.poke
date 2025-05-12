@@ -25,3 +25,5 @@ batalla torneoPokemon(valor, valor, valor) {
 }
 
 teElijo torneoPokemon(valor1, valor2, valor3)
+
+si (1 < 2 and 2 > 3)

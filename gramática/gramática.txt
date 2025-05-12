@@ -26,11 +26,11 @@ Instrucción       ::= (Repetición
                    | Invocación
                    | Retorno) 
 
-Repetición        ::= turnos (Condición | Entero) BloqueInstrucciones
+Repetición        ::= turnos (Condición) BloqueInstrucciones
 
 Bifurcación       ::= Si (Sinnoh)?
 
-Si                ::= Si (Condición) BloqueInstrucciones
+Si                ::= si (Condición) BloqueInstrucciones
 
 Sinnoh            ::= Sinnoh BloqueInstrucciones
 
@@ -38,7 +38,9 @@ Principal         ::= teReto! BloqueInstrucciones
 
 BloqueInstrucciones ::= { Instrucción* }
 
-Condición         ::= Comparación ((and | or) Comparación)*
+Condición         ::= Comparación (OperadorLógico Comparación)*
+
+OperadorLógico    ::= and | or
 
 Comparación       ::= Valor Comparador Valor
 
@@ -46,9 +48,7 @@ Valor             ::= (Identificador | Literal)
 
 Retorno           ::= retirada (Valor | 0)
 
-Literal           ::= Número | String | Booleano 
-
-Número            ::= Entero | Flotante
+Literal           ::= Entero | Flotante | String | Booleano 
 
 String            ::= "(\w(\s\w))"
 

@@ -22,7 +22,7 @@ class TipoNodo(Enum):
     BIFURCACION = auto()
     SI = auto()
     SINNOH = auto()
-    #OPERADOR_LOGICO = auto()
+    OPERADOR_LOGICO = auto()
     PRINCIPAL = auto()
     CONDICION = auto()
     COMPARACION = auto()
