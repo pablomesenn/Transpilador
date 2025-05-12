@@ -54,7 +54,7 @@ class AnalizadorLexico:
         while True:
             
             # EL BUCLE ANALIZA LA PARTE: (Comentario | Asignación | Función | Equipo)*
-
+            print("Tipo: " + self.componente_actual.tipo)
             # ASIGNACIÓN
             if self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
                 nodos_nuevos.append([self.analizar_asignacion()]) 
@@ -96,7 +96,8 @@ class AnalizadorLexico:
 
         # Verificar el signo de igual
         self.verificar("=")
-        
+        self.__pasar_siguiente_componente()
+
         # Analizar el lado derecho de la asignación: (Literal | Expresión | Invocación)
         # Verificamos qué tipo de valor tenemos a la derecha
         
@@ -122,7 +123,20 @@ class AnalizadorLexico:
         
         # Crear y devolver el nodo de asignación con todos sus componentes
         return NodoArbol(TipoNodo.ASIGNACION, nodos=nodos_nuevos)
-
+    
+    def _convertir_tipo_componente_a_tipo_nodo(self, tipo_componente):
+        """
+        Convierte un TipoComponente a un TipoNodo correspondiente para literales
+        """
+        mapa_conversion = {
+            TipoComponente.STRING: TipoNodo.STRING,
+            TipoComponente.ENTERO: TipoNodo.ENTERO,
+            TipoComponente.FLOTANTE: TipoNodo.FLOTANTE,
+            TipoComponente.BOOLEANO: TipoNodo.BOOLEANOS
+        }
+    
+        return mapa_conversion.get(tipo_componente, None)
+    
     def analizar_expresion(self):
             """
             Expresión simplificada ::= Término (Operador Término)*
@@ -261,21 +275,7 @@ class AnalizadorLexico:
 
 
         return NodoArbol(TipoNodo.FUNCION, nodos=nodos_nuevos)
-    
-    def analizar_parametros(self):
-        """
-        Parámetros ::= Valor ("," Identificador)*
-        """
-        nodos_nuevos = []
-
-        nodos_nuevos.append(self.verificar_identificador())
-
-        while self.componente_actual.texto == ",":
-            self.verificar(",")
-            nodos_nuevos+= [self.verificar_identificador()]
-
-        return NodoArbol(TipoNodo.PARAMETROS, nodos=nodos_nuevos)
-    
+        
     def analizar_equipo(self):
         """
         Equipo::= equipo Identificador {Pokemon{1,6}}
@@ -513,20 +513,6 @@ class AnalizadorLexico:
 
         return nodo
 
-    def analizar_valor(self):
-
-        """
-        Valor ::= (Identificador | Literal)
-        """ 
-
-        # Es un identificador o un literal
-        if self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
-            nodo = [self.verificar_identificador()]
-        else:
-            nodo = [self.analizar_literal()]
-
-        return nodo
-
     def analizar_literal(self):
         
         """
@@ -565,11 +551,6 @@ class AnalizadorLexico:
 
         return nodo
     
-    def analizar_invocacion(self):
-        
-        nodos_nuevos = []
-        pass
-
     def analizar_retirada(self):
         
         nodos_nuevos = []
@@ -683,24 +664,30 @@ class AnalizadorLexico:
         Verifica si el texto del componente léxico actual corresponde con
         el esperado cómo argumento
         """
-
+        if self.componente_actual is None:
+            raise Exception(f"Error de sintaxis: Se esperaba '{string}', pero se llegó al final del archivo")
+            
         if self.componente_actual.texto != string:
             raise Exception(f"Error de sintaxis: Se esperaba '{string}', pero se encontró '{self.componente_actual.texto}'")
-
-        self.__pasar_siguiente_componente()
-
+        
     def verificar_tipo_componente(self, tipo: TipoComponente):
         """
         Verifica que el componente actual sea del tipo esperado.
         Si no lo es, lanza una excepción.
         """
-
+        if self.componente_actual is None:
+            raise Exception(f"Error de sintaxis: Se esperaba un componente de tipo '{tipo}', pero se llegó al final del archivo")
+        
         if self.componente_actual.tipo != tipo:
-            raise Exception(f"Error de sintaxis: Se esperaba un componente de tipo '{tipo}', pero se encontró '{self.componente_actual.texto}'")   
+            raise Exception(f"Error de sintaxis: Se esperaba un componente de tipo '{tipo}', pero se encontró '{self.componente_actual.texto}'") 
 
     def __pasar_siguiente_componente(self):
 
-        self.posicion += 1
-
-        if self.posicion >= self.cantidad_componentes:
-            return
+        """
+        Avanza al siguiente componente léxico.
+        """
+        self.posicion_componente_actual += 1
+        if self.posicion_componente_actual < self.cantidad_componentes:
+            self.componente_actual = self.componentes_lexicos[self.posicion_componente_actual]
+        else:
+            self.componente_actual = None
