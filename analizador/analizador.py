@@ -1,3 +1,4 @@
+#Analizador
 from explorador.explorador import TipoComponente, ComponenteLexico
 from utils.arbol import TipoNodo, NodoArbol, ArbolSintaxisAbstracta
 
@@ -247,6 +248,10 @@ class AnalizadorLexico:
         """
         Valor ::= (Identificador | Literal)
         """
+        
+        if self.componente_actual.tipo == TipoComponente.PALABRA_CLAVE or self.componente_actual.tipo == TipoComponente.OPERADOR:
+            raise Exception(f"Error de sintaxis: No se puede usar '{self.componente_actual.texto}' como identificador, ya que es una palabra reservada")
+        
         # Si es un identificador
         if self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
             return self.verificar_identificador()
@@ -261,7 +266,6 @@ class AnalizadorLexico:
             valor = NodoArbol(tipo_nodo, contenido=self.componente_actual.texto)
             self.__pasar_siguiente_componente()
             return valor
-        
         else:
             raise Exception(f"Error de sintaxis: Se esperaba un identificador o un literal, pero se encontró '{self.componente_actual.texto}'")
         
@@ -273,11 +277,22 @@ class AnalizadorLexico:
         nodos_nuevos = []
 
         self.verificar("batalla")
-        nodos_nuevos.append(self.verificar_identificador())
-        self.verificar("(") 
-        nodos_nuevos.append(self.analizar_parametros())
+        self.__pasar_siguiente_componente()
+        
+        identificador = self.verificar_identificador()
+        nodos_nuevos.append(identificador)
+
+        self.verificar("(")
+        self.__pasar_siguiente_componente()
+        
+        parametros = self.analizar_parametros()
+        nodos_nuevos.append(parametros)
+
         self.verificar(")")
-        nodos_nuevos.append(self.analizar_bloque_instrucciones())
+        self.__pasar_siguiente_componente()
+
+        Instrucciones = self.analizar_bloque_instrucciones()
+        nodos_nuevos.append(Instrucciones)
 
         return NodoArbol(TipoNodo.FUNCION, nodos=nodos_nuevos)
         
@@ -290,9 +305,11 @@ class AnalizadorLexico:
 
         # Palabra clave "equipo"
         self.verificar("equipo")
+        self.__pasar_siguiente_componente()
 
         # Nombre del equipo (identificador)
-        nodos_nuevos.append(self.verificar_identificador())
+        identificador = self.verificar_identificador()
+        nodos_nuevos.append(identificador)
 
         # Llave de apertura
         self.verificar("{")
@@ -363,6 +380,7 @@ class AnalizadorLexico:
 
         # Verificar el token '{'
         self.verificar("{")
+        self.__pasar_siguiente_componente()
 
         # Instrucciones dentro del bloque, pueden ser 0 o más
         while self.componente_actual.texto in ['turnos', 'si', 'sinnoh', 'retirada'] or self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
@@ -370,6 +388,7 @@ class AnalizadorLexico:
 
         # Verificar el token '}'
         self.verificar("}")
+        self.__pasar_siguiente_componente()
 
         return NodoArbol(TipoNodo.BLOQUE_INSTRUCCIONES, nodos=nodos_nuevos)
 
@@ -380,7 +399,7 @@ class AnalizadorLexico:
         """
 
         nodos_nuevos = []
-
+        
         # Repetición
         if self.componente_actual.texto == "turnos":
             nodos_nuevos.append(self.analizar_repeticion())
@@ -585,6 +604,7 @@ class AnalizadorLexico:
 
         # Verificar el token "retirada"
         self.verificar("retirada")
+        self.__pasar_siguiente_componente()
         # Verificar el valor
         nodos_nuevos.append(self.analizar_valor())
         # Crear y devolver el nodo de retorno
@@ -596,7 +616,9 @@ class AnalizadorLexico:
         Verifica que el componente actual sea un identificador.
         Si no lo es, lanza una excepción.
         """
-
+        #Si el tipo es PALABRA_CLAVE tira error especifico
+        if self.componente_actual.tipo == TipoComponente.PALABRA_CLAVE or self.componente_actual.tipo == TipoComponente.OPERADOR:
+            raise Exception(f"Error de sintaxis: No se puede usar '{self.componente_actual.texto}' como identificador, ya que es una palabra reservada")
         self.verificar_tipo_componente(TipoComponente.IDENTIFICADOR)
 
         # Agregar el nodo al árbol

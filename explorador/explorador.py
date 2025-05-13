@@ -41,8 +41,6 @@ class ExploradorPokeScript:
         # --- ERRORES léxicos específicos ---
         (TipoComponente.ERROR,         r'^[0-9][a-zA-Z_][a-zA-Z0-9_]*'),  # Identificador que empieza con número
         (TipoComponente.ERROR,         r'^[A-Za-z][a-zA-Z0-9_]*[@#$%&*]+[a-zA-Z0-9_]*'),  # Caracteres no permitidos
-        (TipoComponente.ERROR,         r'^-?\d+\.\d+'),  # Punto decimal en vez de coma
-
         # Palabras clave y otros tokens específicos
         (TipoComponente.TIPO,          r'^(planta|agua|fuego|hielo)\b'),
         (TipoComponente.PALABRA_CLAVE, r'^(equipo|Batalla|turnos|usar|huir|ResetearStats|retirada|capturar|evolución|chachara|teElijo)\b'),
@@ -55,12 +53,11 @@ class ExploradorPokeScript:
         (TipoComponente.COMPARADOR,    r'^(==|!=|<=|>=|<|>)'),
         (TipoComponente.STRING,        r'^"[^"\n]*"'),
         (TipoComponente.STRING,        r'^"[^"\n]*$'),
-        (TipoComponente.FLOTANTE,      r'^-?\d+,\d+'),
+        (TipoComponente.FLOTANTE,      r'^-?\d+\.\d+'),
         (TipoComponente.ENTERO,        r'^-?\d+'),
         (TipoComponente.OPERADOR_LOGICO, r'^(and|or)\b'),
 
         # Correcto identificador y nombres de Pokémon
-        (TipoComponente.NOMBRE_POKEMON, r'^poke[a-zA-Z0-9_]+\b'),
         (TipoComponente.IDENTIFICADOR, r'^[a-zA-Z_][a-zA-Z0-9_]*\b'),
         
         (TipoComponente.PUNTUACION,    r'^[():,{}]'),
@@ -141,8 +138,6 @@ class ExploradorPokeScript:
             return f"'{texto}' es un identificador inválido, no puede comenzar con un número"
         elif re.match(r'^[A-Za-z][a-zA-Z0-9_]*[@#$%&*]+[a-zA-Z0-9_]*', texto):
             return f"'{texto}' contiene caracteres no permitidos en identificadores"
-        elif re.match(r'^-?\d+\.\d+', texto):
-            return f"'{texto}' usa punto decimal en lugar de coma para flotantes"
         else:
             return f"'{texto}' no es un token válido"
 
