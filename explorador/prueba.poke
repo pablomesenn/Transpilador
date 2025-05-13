@@ -1,7 +1,7 @@
 pika: Gestión de múltiples Pokémon
 
 equipo equipoElite {
-  pikachu {100, 80,5}
+  pokei {100, 80,5}
   charizard {120, 95,0}
 }
 

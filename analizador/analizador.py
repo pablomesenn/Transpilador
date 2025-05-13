@@ -57,22 +57,22 @@ class AnalizadorLexico:
             print("Tipo: " + self.componente_actual.tipo)
             # ASIGNACIÓN
             if self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
-                nodos_nuevos.append([self.analizar_asignacion()]) 
+                nodos_nuevos.append(self.analizar_asignacion()) 
             
             # FUNCION
             elif self.componente_actual.tipo == TipoComponente.FUNCION:
-                nodos_nuevos.append([self.analizar_funcion()])
+                nodos_nuevos.append(self.analizar_funcion())
 
             # EQUIPO
             elif self.componente_actual.texto == "equipo":
-                nodos_nuevos.append([self.analizar_equipo()])
+                nodos_nuevos.append(self.analizar_equipo())
 
             else:
                 break
         
         # PRINCIPAL
         if self.componente_actual.texto == "teReto!":
-                 ppend([self.analizar_principal()])
+            nodos_nuevos.append(self.analizar_principal())
             
         else:
             raise Exception("Error de sintaxis: Se esperaba 'principal'")
@@ -80,10 +80,11 @@ class AnalizadorLexico:
         return NodoArbol(TipoNodo.PROGRAMA, nodos=nodos_nuevos) 
 
     def analizar_asignacion(self):
+        
         """
         Asignacion ::= Identificador Tipo = (Literal | Expresión | Invocación)
         """
-        # Lista para almacenar los nodos hijos de la asignación
+        
         nodos_nuevos = []
 
         # El identificador es obligatorio al inicio
@@ -138,33 +139,35 @@ class AnalizadorLexico:
         return mapa_conversion.get(tipo_componente, None)
     
     def analizar_expresion(self):
-            """
-            Expresión simplificada ::= Término (Operador Término)*
-            Término ::= Literal | Identificador | Invocación
-            """
-            # Analizamos el primer término
-            termino_izquierdo = self.analizar_termino()
-            
-            # Nodo inicial de la expresión
-            nodo_expresion = NodoArbol(TipoNodo.EXPRESION, nodos=[termino_izquierdo])
-            
-            # Si después del término hay un operador, continuamos analizando la expresión
-            while (self.componente_actual and 
-                self.componente_actual.tipo == TipoComponente.OPERADOR):
-                
-                # Crear nodo para el operador
-                operador = NodoArbol(TipoNodo.OPERADOR, contenido=self.componente_actual.texto)
-                self.__pasar_siguiente_componente()
-                
-                # Analizar el término derecho
-                termino_derecho = self.analizar_termino()
-                
-                # Actualizar el nodo de expresión para incluir el operador y el término derecho
-                nodo_expresion.nodos.append(operador)
-                nodo_expresion.nodos.append(termino_derecho)
-            return nodo_expresion    
         
+        """
+        Expresión simplificada ::= Término (Operador Término)*
+        Término ::= Literal | Identificador | Invocación
+        """
+        
+        # Analizamos el primer término
+        termino_izquierdo = self.analizar_termino()
+        
+        # Nodo inicial de la expresión
+        nodo_expresion = NodoArbol(TipoNodo.EXPRESION, nodos=[termino_izquierdo])
+        
+        # Si después del término hay un operador, continuamos analizando la expresión
+        while (self.componente_actual and 
+            self.componente_actual.tipo == TipoComponente.OPERADOR):
+            
+            # Crear nodo para el operador
+            operador = NodoArbol(TipoNodo.OPERADOR, contenido=self.componente_actual.texto)
+            self.__pasar_siguiente_componente()
+            
+            # Analizar el término derecho
+            termino_derecho = self.analizar_termino()
+            
+            # Actualizar el nodo de expresión para incluir el operador y el término derecho
+            nodo_expresion.nodos.append(operador)
+            nodo_expresion.nodos.append(termino_derecho)
 
+        return nodo_expresion    
+        
     def analizar_termino(self):
             """
             Término ::= Literal | Identificador | Invocación
@@ -192,9 +195,11 @@ class AnalizadorLexico:
                 raise Exception(f"Error de sintaxis: Se esperaba un término válido, pero se encontró '{self.componente_actual.texto}'")
 
     def analizar_invocacion(self):
+        
         """
         Invocación ::= teElijo Identificador (Parámetros)
         """
+
         # Verificar que comience con "teElijo"
         self.verificar("teElijo")
         self.__pasar_siguiente_componente()
@@ -217,9 +222,11 @@ class AnalizadorLexico:
         return NodoArbol(TipoNodo.INVOCACION, nodos=[identificador, parametros])
 
     def analizar_parametros(self):
+        
         """
         Parámetros ::= Valor (',' Valor)*
         """
+        
         parametros = []
         
         # Si no hay parámetros (cierre inmediato)
@@ -258,62 +265,77 @@ class AnalizadorLexico:
         else:
             raise Exception(f"Error de sintaxis: Se esperaba un identificador o un literal, pero se encontró '{self.componente_actual.texto}'")
         
-    
     def analizar_funcion(self):
-        pass
+
         """
         Función ::= batalla Identificador (Parámetros) { Instruccion*}
         """
         nodos_nuevos = []
 
         self.verificar("batalla")
-        nodos_nuevos += [self.verificar_identificador()]
+        nodos_nuevos.append(self.verificar_identificador())
         self.verificar("(") 
-        nodos_nuevos += [self.analizar_parametros()]
+        nodos_nuevos.append(self.analizar_parametros())
         self.verificar(")")
-        nodos_nuevos += [self.analizar_bloque_instrucciones()]
-
+        nodos_nuevos.append(self.analizar_bloque_instrucciones())
 
         return NodoArbol(TipoNodo.FUNCION, nodos=nodos_nuevos)
         
     def analizar_equipo(self):
         """
-        Equipo::= equipo Identificador {Pokemon{1,6}}
+        Equipo ::= equipo Identificador { Pokemon{1,6} }
         """
+
         nodos_nuevos = []
 
+        # Palabra clave "equipo"
         self.verificar("equipo")
-        nodos_nuevos += self.verificar_identificador()
+
+        # Nombre del equipo (identificador)
+        nodos_nuevos.append(self.verificar_identificador())
+
+        # Llave de apertura
         self.verificar("{")
-        # Verificar que haya entre 1 y 6 pokemones
-        for i in range(7):
-            if i == 6:
+
+        # Al menos 1 y como máximo 6 Pokémon
+        cantidad_pokemones = 0
+        while self.componente_actual.tipo == TipoComponente.NOMBRE_POKEMON:
+            if cantidad_pokemones == 6:
                 raise Exception("Error de sintaxis: Un equipo no puede tener más de 6 Pokémon.")
-            if self.componente_actual.tipo == TipoComponente.NOMBRE_POKEMON:
-                nodos_nuevos += (self.analizar_pokemon())
-            else:
-                if i == 0:
-                    raise Exception("Error de sintaxis: Se esperaba al menos un Pokémon.")
-                break
+            
+            nodos_nuevos.append(self.analizar_pokemon())
+            cantidad_pokemones += 1
+
+        if cantidad_pokemones == 0:
+            raise Exception("Error de sintaxis: Se esperaba al menos un Pokémon.")
+
+        # Llave de cierre
+        self.verificar("}")
 
         return NodoArbol(TipoNodo.EQUIPO, nodos=nodos_nuevos)
-    
+
     def analizar_pokemon(self):
+        
         """
         Pokemon::= NombrePokemon {Entero, Float}
         """
+
         nodos_nuevos = []
+        
         # Verificar el nombre del Pokémon
         self.verificar_tipo_componente(TipoComponente.NOMBRE_POKEMON)
         nodos_nuevos.append(NodoArbol(TipoNodo.NOMBRE_POKEMON, contenido=self.componente_actual.texto))
         self.__pasar_siguiente_componente()
+
         self.verificar("{")
+        
         nodos_nuevos.append(self.verificar_enteros())
         nodos_nuevos.append(self.verificar_flotantes())
+        
         self.verificar("}")
+
         return NodoArbol(TipoNodo.POKEMON, nodos=nodos_nuevos)
     
-
     def analizar_principal(self):
         
         """
@@ -325,7 +347,7 @@ class AnalizadorLexico:
         # Verificar el token "teReto!"
         self.verificar('teReto!')
 
-        nodos_nuevos.append([self.analizar_bloque_instrucciones()])
+        nodos_nuevos.append(self.analizar_bloque_instrucciones())
 
         return NodoArbol(TipoNodo.PRINCIPAL, nodos=nodos_nuevos)
 
@@ -344,7 +366,7 @@ class AnalizadorLexico:
 
         # Instrucciones dentro del bloque, pueden ser 0 o más
         while self.componente_actual.texto in ['turnos', 'si', 'sinnoh', 'retirada'] or self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
-            nodos_nuevos.append([self.analizar_instruccion()])
+            nodos_nuevos.append(self.analizar_instruccion())
 
         # Verificar el token '}'
         self.verificar("}")
@@ -361,23 +383,23 @@ class AnalizadorLexico:
 
         # Repetición
         if self.componente_actual.texto == "turnos":
-            nodos_nuevos.append([self.analizar_repeticion()])
+            nodos_nuevos.append(self.analizar_repeticion())
 
         # Bifurcación
         elif self.componente_actual.texto == "si":
-            nodos_nuevos.append([self.analizar_bifurcacion()])
+            nodos_nuevos.append(self.analizar_bifurcacion())
 
         # Asignación
         elif self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
-            nodos_nuevos.append([self.analizar_asignacion()]) #! analizar_asignacion() o está en proceso, faltan pruebas
+            nodos_nuevos.append(self.analizar_asignacion())
 
         # Invocación
         elif self.componente_actual.texto == "teElijo":
-            nodos_nuevos.append([self.analizar_invocacion()])
+            nodos_nuevos.append(self.analizar_invocacion())
 
         # Retorno
         elif self.componente_actual.texto == "retirada":
-            nodos_nuevos.append([self.analizar_retirada()])
+            nodos_nuevos.append(self.analizar_retorno())
 
         # Porta a mi los comentarios xD
 
@@ -397,12 +419,12 @@ class AnalizadorLexico:
         # Verificar token "("
         self.verificar("(")
         # Verificar la condición    
-        nodos_nuevos.append([self.analizar_condicion()])
+        nodos_nuevos.append(self.analizar_condicion())
         # Verificar token ")"
         self.verificar(")")
 
         # Analizar el bloque de instrucciones
-        nodos_nuevos.append([self.analizar_bloque_instrucciones()])
+        nodos_nuevos.append(self.analizar_bloque_instrucciones())
 
         return NodoArbol(TipoNodo.REPETICION, nodos=nodos_nuevos)
 
@@ -415,10 +437,10 @@ class AnalizadorLexico:
         nodos_nuevos = []
 
         # La regla "si" es obligatorio
-        nodos_nuevos.append([self.analizar_si()])
+        nodos_nuevos.append(self.analizar_si())
         # Si hay un "sinnoh" opcional
         if self.componente_actual.texto == "sinnoh":
-            nodos_nuevos.append([self.analizar_sinnoh()])
+            nodos_nuevos.append(self.analizar_sinnoh())
 
         return NodoArbol(TipoNodo.BIFURCACION, nodos=nodos_nuevos)
 
@@ -435,12 +457,12 @@ class AnalizadorLexico:
         # Verificar token "("
         self.verificar("(")
         # Verificar la condición    
-        nodos_nuevos.append([self.analizar_condicion()])
+        nodos_nuevos.append(self.analizar_condicion())
         # Verificar token ")"
         self.verificar(")")
 
         # Analizar el bloque de instrucciones
-        nodos_nuevos.append([self.analizar_bloque_instrucciones()])
+        nodos_nuevos.append(self.analizar_bloque_instrucciones())
 
         return NodoArbol(TipoNodo.SI, nodos=nodos_nuevos)
 
@@ -455,7 +477,7 @@ class AnalizadorLexico:
         self.verificar("sinnoh")
 
         # Analizar el bloque de instrucciones
-        nodos_nuevos.append([self.analizar_bloque_instrucciones()])
+        nodos_nuevos.append(self.analizar_bloque_instrucciones())
 
         return NodoArbol(TipoNodo.SINNOH, nodos=nodos_nuevos)
 
@@ -468,14 +490,14 @@ class AnalizadorLexico:
         nodos_nuevos = []
 
         # Verificar la comparación
-        nodos_nuevos.append([self.analizar_comparacion()])
+        nodos_nuevos.append(self.analizar_comparacion())
         
         # Verificar el operador lógico
         while self.componente_actual.tipo == TipoComponente.OPERADOR_LOGICO:
             
-            nodos_nuevos.append([self.analizar_operador_logico()])
+            nodos_nuevos.append(self.analizar_operador_logico())
             # Verificar la comparación
-            nodos_nuevos.append([self.analizar_comparacion()])
+            nodos_nuevos.append(self.analizar_comparacion())
         
         return NodoArbol(TipoNodo.CONDICION, nodos=nodos_nuevos)
 
@@ -488,11 +510,11 @@ class AnalizadorLexico:
         nodos_nuevos = []
 
         # Verificar el primer valor
-        nodos_nuevos.append([self.analizar_valor])
+        nodos_nuevos.append(self.analizar_valor)
         # Verificar el comparador
-        nodos_nuevos.append([self.analizar_comparador()])
+        nodos_nuevos.append(self.analizar_comparador())
         # Verificar el segundo valor
-        nodos_nuevos.append([self.analizar_valor()])
+        nodos_nuevos.append(self.analizar_valor())
 
         return NodoArbol(TipoNodo.COMPARACION, nodos=nodos_nuevos)
 
@@ -512,6 +534,8 @@ class AnalizadorLexico:
         self.__pasar_siguiente_componente()
 
         return nodo
+
+    #TODO: Tal vez haga falta manejar los literales como lo hace victor en analizar_asignacion()
 
     def analizar_literal(self):
         
@@ -551,10 +575,20 @@ class AnalizadorLexico:
 
         return nodo
     
-    def analizar_retirada(self):
+    def analizar_retorno(self):
+
+        """
+        Retorno ::= retirada Valor
+        """
         
         nodos_nuevos = []
-        pass
+
+        # Verificar el token "retirada"
+        self.verificar("retirada")
+        # Verificar el valor
+        nodos_nuevos.append(self.analizar_valor())
+        # Crear y devolver el nodo de retorno
+        return NodoArbol(TipoNodo.RETORNO, nodos=nodos_nuevos)
 
     def verificar_identificador(self):
         
@@ -675,6 +709,7 @@ class AnalizadorLexico:
         Verifica que el componente actual sea del tipo esperado.
         Si no lo es, lanza una excepción.
         """
+
         if self.componente_actual is None:
             raise Exception(f"Error de sintaxis: Se esperaba un componente de tipo '{tipo}', pero se llegó al final del archivo")
         

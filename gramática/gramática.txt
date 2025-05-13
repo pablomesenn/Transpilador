@@ -1,69 +1,67 @@
-Programa          ::= (Comentario | Asignación | Función | Equipo)* Principal
+- Programa          ::= (Comentario | Asignación | Función | Equipo)* Principal
 
-Comentario        ::= pika: String
+- Comentario        ::= pika: String
 
-Asignación        ::= Identificador Tipo = (Literal | Expresión | Invocación)
+- Asignación        ::= Identificador Tipo = (Literal | Expresión | Invocación)
 
-AsignaciónGlobal  ::= Salvaje Asignación
+- Tipo              ::= planta | fuego | agua | hielo
 
-Tipo              ::= planta | fuego | agua | hielo
+- ExpresiónSimplificada ::= Término (Operador Término)*
 
-Expresión simplificada ::= Término (Operador Término)*
+- Término ::= Literal | Identificador | Invocación
 
-Término ::= Literal | Identificador | Invocación
+- Operador          ::= (ataque | poción | fortalecer | golpecritrico)
 
-Operador          ::= (ataque | poción | fortalecer | golpecritrico)
+- Función           ::= batalla Identificador (Parámetros) BloqueInstrucciones
 
-Función           ::= batalla Identificador (Parámetros) BloqueInstrucciones
+- Invocación        ::= teElijo Identificador (Parámetros)
 
-Invocación        ::= teElijo Identificador (Parámetros)
+- Parámetros        ::= Valor (',' Valor)*
 
-Parámetros        ::= Valor (',' Valor)*
-
-Instrucción       ::= (Repetición 
+- Instrucción       ::= (Repetición 
                    | Bifurcación 
                    | Asignación 
                    | Invocación
                    | Retorno) 
 
-Repetición        ::= turnos (Condición) BloqueInstrucciones
+- BloqueInstrucciones ::= { Instrucción* }
 
-Bifurcación       ::= Si (Sinnoh)?
+- Repetición        ::= turnos (Condición) BloqueInstrucciones
 
-Si                ::= si (Condición) BloqueInstrucciones
+- Bifurcación       ::= Si (Sinnoh)?
 
-Sinnoh            ::= Sinnoh BloqueInstrucciones
+- Si                ::= si (Condición) BloqueInstrucciones
 
-Principal         ::= teReto! BloqueInstrucciones 
+- Sinnoh            ::= Sinnoh BloqueInstrucciones
 
-BloqueInstrucciones ::= { Instrucción* }
+- Principal         ::= teReto! BloqueInstrucciones 
 
-Condición         ::= Comparación (OperadorLógico Comparación)*
+- Condición         ::= Comparación (OperadorLógico Comparación)*
 
-OperadorLógico    ::= and | or
+- OperadorLógico    ::= and | or
 
-Comparación       ::= Valor Comparador Valor
+- Comparación       ::= Valor Comparador Valor
 
-Valor             ::= (Identificador | Literal)
+- Valor             ::= (Identificador | Literal)
 
-Retorno           ::= retirada (Valor | 0)
+Retorno           ::= retirada Valor
 
-Literal           ::= Entero | Flotante | String | Booleano 
+-- Literal           ::= Entero | Flotante | String | Booleano 
 
-String            ::= "(\w(\s\w))"
+-- String            ::= "(\w(\s\w))"
 
-Booleanos         ::= capturado | escapó
+-- Booleanos         ::= capturado | escapó
 
-Entero            ::= -?[0-9]+
+-- Entero            ::= -?[0-9]+
 
-Flotante          ::= -?[0-9]+','[0-9]+
+-- Flotante          ::= -?[0-9]+','[0-9]+
 
-Identificador     ::= [A-Za-z_][A-Za-z0-9_]*
+- Identificador     ::= [A-Za-z_][A-Za-z0-9_]*
 
-Comparador        ::= '==' | '!=' | '<' | '>' | '<=' | '>='
+- Comparador        ::= '==' | '!=' | '<' | '>' | '<=' | '>='
 
-Equipo            ::= equipo Identificador {Pokemon{1,6}}
+- Equipo            ::= equipo Identificador {Pokemon{1,6}}
 
-Pokemon           ::= NombrePokemon {Entero, Float}
+- Pokemon           ::= NombrePokemon {Entero, Float}
 
-NombrePokemon    ::= [A-Za-z][A-Za-z0-9_-]+  
+- NombrePokemon    ::= poke[A-Za-z][A-Za-z0-9_-]+  

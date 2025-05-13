@@ -59,7 +59,8 @@ class ExploradorPokeScript:
         (TipoComponente.ENTERO,        r'^-?\d+'),
         (TipoComponente.OPERADOR_LOGICO, r'^(and|or)\b'),
 
-        # Correcto identificador
+        # Correcto identificador y nombres de Pokémon
+        (TipoComponente.NOMBRE_POKEMON, r'^poke[a-zA-Z0-9_]+\b'),
         (TipoComponente.IDENTIFICADOR, r'^[a-zA-Z_][a-zA-Z0-9_]*\b'),
         
         (TipoComponente.PUNTUACION,    r'^[():,{}]'),
