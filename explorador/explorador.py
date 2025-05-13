@@ -43,14 +43,14 @@ class ExploradorPokeScript:
         (TipoComponente.ERROR,         r'^[A-Za-z][a-zA-Z0-9_]*[@#$%&*]+[a-zA-Z0-9_]*'),  # Caracteres no permitidos
         # Palabras clave y otros tokens específicos
         (TipoComponente.TIPO,          r'^(planta|agua|fuego|hielo)\b'),
-        (TipoComponente.PALABRA_CLAVE, r'^(equipo|Batalla|turnos|usar|huir|ResetearStats|retirada|capturar|evolución|chachara|teElijo)\b'),
+        (TipoComponente.PALABRA_CLAVE, r'^(equipo|Batalla|turnos|usar|huir|ResetearStats|retirada|capturar|evolución|chachara|teElijo|teReto)\b'),
         (TipoComponente.PALABRA_CLAVE, r'^(vida_[a-zA-Z0-9_]+|energia_[a-zA-Z0-9_]+)\b'),
         (TipoComponente.FUNCION,       r'^(batalla)\b'),
         (TipoComponente.CONDICIONAL,   r'^(si|sinnoh)\b'),
         (TipoComponente.REPETICION,    r'^(trampa|Arena)\b'),
+        (TipoComponente.COMPARADOR,    r'^(==|!=|<=|>=|<|>)'),
         (TipoComponente.ASIGNACION,    r'^='),
         (TipoComponente.OPERADOR,      r'^(ataque|poción|fortalecer|golpecritrico)\b'),
-        (TipoComponente.COMPARADOR,    r'^(==|!=|<=|>=|<|>)'),
         (TipoComponente.STRING,        r'^"[^"\n]*"'),
         (TipoComponente.STRING,        r'^"[^"\n]*$'),
         (TipoComponente.FLOTANTE,      r'^-?\d+\.\d+'),

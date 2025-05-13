@@ -54,6 +54,9 @@ def test_asignaciones():
                 for subnodo in nodo.nodos:
                     if subnodo:
                         print(f"  │  └─ {subnodo.nodeToStr()}")
+                        for subsubnodo in subnodo.nodos:
+                            if subsubnodo:
+                                print(f"  │     └─ {subsubnodo.nodeToStr()}")
             
             print("\n✅ Análisis exitoso")
         
@@ -215,6 +218,9 @@ def test_funciones():
                         for subsubnodo in subnodo.nodos:
                             if subsubnodo:
                                 print(f"  │     └─ {subsubnodo.nodeToStr()}")
+                                for subsubsubnodo in subsubnodo.nodos:
+                                    if subsubsubnodo:
+                                        print(f"  │        └─ {subsubsubnodo.nodeToStr()}")
             
             print("\n✅ Análisis exitoso")
         
@@ -231,8 +237,8 @@ def test_equipos():
     
     ejemplos = [
         "equipo MiE { Pikachu {100, 5.5} }",
-        "equipo Elite { Charizard {150, 7,8} Blastoise {145, 6.9} Venusaur {140, 6.5} }",
-        "equipo Completo { Pikachu {100, 5,5} Charizard {150, 7.8} Blastoise {145, 6,9} Venusaur {140, 6.5} Snorlax {200, 8.0} Gengar {130, 7.2} }"
+        "equipo Elite { Charizard {150, 7.8} Blastoise {145, 6.9} Venusaur {140, 6.5} }",
+        "equipo Completo { Pikachu {100, 5.5} Charizard {150, 7.8} Blastoise {145, 6.9} Venusaur {140, 6.5} Snorlax {200, 8.0} Gengar {130, 7.2} }"
     ]
     
     for i, ejemplo in enumerate(ejemplos, 1):
@@ -282,8 +288,8 @@ def test_repeticiones():
     print("\n=== TEST DE REPETICIONES ===")
     
     ejemplos = [
-        "turnos (contador paralizar 10) { contador fuego = contador ataque 1 }",
-        """turnos (hp energia 0) { 
+        "turnos (contador == 10) { contador fuego = contador ataque 1 }",
+        """turnos (hp > 0) { 
             hp fuego = hp ataque 1 
             energia fuego = energia ataque 1
         }"""
@@ -336,8 +342,8 @@ def test_bifurcaciones():
     print("\n=== TEST DE BIFURCACIONES ===")
     
     ejemplos = [
-        "si (hp paralizar 0) { retirada capturado }",
-        """si (hp paralizador 0) { 
+        "si (hp < 0) { retirada capturado }",
+        """si (hp == 0) { 
             retirada capturado 
         } sinnoh { 
             hp fuego = hp ataque 10 
@@ -379,6 +385,9 @@ def test_bifurcaciones():
                         for subsubnodo in subnodo.nodos:
                             if subsubnodo:
                                 print(f"  │     └─ {subsubnodo.nodeToStr()}")
+                                for subsubsubnodo in subsubnodo.nodos:
+                                    if subsubsubnodo:
+                                        print(f"  │        └─ {subsubsubnodo.nodeToStr()}")
             
             print("\n✅ Análisis exitoso")
         
@@ -394,10 +403,10 @@ def test_condiciones():
     print("\n=== TEST DE CONDICIONES ===")
     
     ejemplos = [
-        "hp paralizar 0",
-        "ataque paralizar defensa",
-        "x ataque y and z paralizador w",
-        "a ataque b or c paralizador d"
+        "hp > 0",
+        "Bombo == clat",
+        "x > y and z == w",
+        "a > b or c > d"
     ]
     
     for i, ejemplo in enumerate(ejemplos, 1):
@@ -498,58 +507,63 @@ def test_programa_completo():
     
     # Un ejemplo de programa completo
     programa = """
-    pika Definición de variables globales
-    ataque fuego = 10
-    defensa agua = 8
+    pika: Definición de variables globales
+    charmander fuego = 10
+    squirtle agua = 8
     
-    pika Definición de una función
+    pika: Definición de una función chu
     batalla calcularDano(pokemon, poder) {
         resultado fuego = pokemon ataque poder
         retirada resultado
     }
     
-    pika Definición de un equipo
+    pika: Definición de un equipo
     equipo MiEquipo {
         Pikachu {100, 5.5}
         Charizard {150, 7.8}
     }
     
-    pika Función principal
-    teReto! {
-        pika Asignaciones
+    pika: Función principal
+    teReto {
+        pika: Asignaciones
         hp fuego = 100
         energia agua = 50
         
-        pika Bifurcación
-        si (hp paralizar 20) {
+        pika: Bifurcación
+        si (hp == 20) {
             mensaje planta = "Pokémon débil"
         } sinnoh {
-            pika Repetición
-            turnos (contador paralizar 3) {
+            pika: Repetición
+            turnos (contador > 3) {
                 hp fuego = hp ataque 10
                 contador fuego = contador ataque 1
             }
         }
         
-        pika Invocación de función
-        resultado fuego = teElijo calcularDano(hp, ataque)
+        pika: Invocación de función
+        resultado fuego = teElijo calcularDano(hp, contador)
     }
     """
     
     try:
         # Análisis léxico
         explorador = ExploradorPokeScript(programa)
+        
+        # Configurar el explorador para manejar comentarios con "pika"
+        # Aquí añadimos la configuración para reconocer "pika" como inicio de comentario
+        #explorador.agregar_patron_comentario("pika")
+        
         componentes = explorador.explorar()
-
+        print("gaymer")
         if explorador.errores:
             print("Errores léxicos encontrados:")
             for error in explorador.errores:
                 print(f"  - {error}")
             return
-        
+            
         # Mostrar componentes léxicos (solo los primeros 10 para no saturar)
         print("Algunos componentes léxicos (primeros 10):")
-        for i, comp in enumerate(componentes[:10]):
+        for i, comp in enumerate(componentes[10:]):
             print(f"  {comp}")
         print("  ...")
             
@@ -561,10 +575,12 @@ def test_programa_completo():
         
         # Mostrar ASA resultante
         print("\nÁrbol de Sintaxis Abstracta para el programa completo:")
-        analizador.imprimir_asa()
-        
+        if analizador.asa.raiz is not None:
+            analizador.asa.imprimir_preorden()  # Llamamos directamente al método del árbol
+        else:
+            print("El árbol está vacío")
         print("\n✅ Análisis exitoso")
-    
+        
     except Exception as e:
         print(f"\n❌ Error durante el análisis: {e}")
         import traceback
@@ -598,8 +614,12 @@ def test_archivo_completo(ruta_archivo):
         
         # Mostrar ASA resultante
         print("\nÁrbol de Sintaxis Abstracta para el programa completo:")
-        analizador.imprimir_asa()
-        
+        if analizador.asa.raiz is not None:
+            analizador.asa.imprimir_preorden()  # Llamamos directamente al método del árbol
+        else:
+            print("El árbol está vacío")
+
+
         print("\n✅ Análisis exitoso")
     
     except Exception as e:

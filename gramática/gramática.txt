@@ -34,7 +34,7 @@
 
 - Sinnoh            ::= Sinnoh BloqueInstrucciones
 
-- Principal         ::= teReto! BloqueInstrucciones 
+- Principal         ::= teReto BloqueInstrucciones 
 
 - Condición         ::= Comparación (OperadorLógico Comparación)*
 
