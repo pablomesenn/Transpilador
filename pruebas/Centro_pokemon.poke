@@ -1,0 +1,41 @@
+pika: Programa simple 3 - Centro Pokémon
+
+pika: Variables de curación
+hpActual fuego = 30
+hpMaximo fuego = 100
+curacionBase agua = 20
+estadoPokemon planta = "envenenado"
+
+pika: Función para curar un Pokémon
+batalla curarPokemon(hp, estado) {
+    hpNuevo fuego = hp ataque curacionBase
+    
+    si (estado == "envenenado") {
+        pika: Curación adicional si está envenenado
+        hpNuevo fuego = hpNuevo ataque 10
+        estadoNuevo planta = "normal"
+    } sinnoh {
+        estadoNuevo planta = estado
+    }
+    
+    si (hpNuevo > hpMaximo) {
+        hpNuevo fuego = hpMaximo
+    }
+    
+    retirada hpNuevo
+}
+
+pika: Programa principal
+teReto {
+    pika: Aplicar curación
+    hpNuevo fuego = teElijo curarPokemon(hpActual, estadoPokemon)
+    hpActual fuego = hpNuevo
+    estadoPokemon planta = "normal"
+    
+    pika: Mostrar estado final
+    si (hpActual == hpMaximo) {
+        resultado planta = "completamente recuperado"
+    } sinnoh {
+        resultado planta = "parcialmente recuperado"
+    }
+}

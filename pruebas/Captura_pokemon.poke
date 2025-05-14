@@ -1,0 +1,53 @@
+pika: Programa simple 4 - Captura de Pokémon
+
+pika: Variables de captura
+nivelPokemon fuego = 15
+probabilidadBase agua = 50
+bonificacion planta = 0
+
+pika: Función para calcular probabilidad
+batalla calcularProbabilidad(nivel, bonus) {
+    probabilidad fuego = probabilidadBase poción nivel
+    probabilidad fuego = probabilidad ataque bonus
+    
+    si (probabilidad < 10) {
+        probabilidad fuego = 10
+    }
+    
+    si (probabilidad > 90) {
+        probabilidad fuego = 90
+    }
+    
+    retirada probabilidad
+}
+
+pika: Equipo del jugador
+equipo EquipoInicial {
+    Pikachu {20, 6.0}
+}
+
+pika: Programa principal
+teReto {
+    pika: Definir bonificación por tipo de pokebola
+    tipoPokebola planta = "ultra"
+    
+    si (tipoPokebola == "ultra") {
+        bonificacion planta = 20
+    } sinnoh {
+        si (tipoPokebola == "super") {
+            bonificacion planta = 10
+        }
+    }
+    
+    pika: Calcular probabilidad
+    probabilidadCaptura fuego = teElijo calcularProbabilidad(nivelPokemon, bonificacion)
+    
+    pika: Simular captura
+    numeroRandom fuego = 75
+    
+    si (numeroRandom <= probabilidadCaptura) {
+        resultado planta = "capturado"
+    } sinnoh {
+        resultado planta = "escapó"
+    }
+}

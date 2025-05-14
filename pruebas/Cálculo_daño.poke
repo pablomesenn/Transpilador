@@ -1,0 +1,38 @@
+pika: Programa simple 1 - Cálculo de daño
+
+pika: Variables básicas
+vidaBase fuego = 100
+poder agua = 25
+defensa planta = 10
+
+pika: Función para calcular daño
+batalla calcularDano(dano, defensa) {
+    resultado fuego = dano poción defensa
+    
+    si (resultado < 1) {
+        resultado fuego = 1
+    }
+    
+    retirada resultado
+}
+
+pika: Equipo de prueba
+equipo MiEquipo {
+    Pikachu {80, 5.5}
+    Charmander {90, 6.2}
+}
+
+pika: Programa principal
+teReto {
+    vidaActual fuego = vidaBase
+    poder fuego = poder ataque 5
+    
+    dano fuego = teElijo calcularDano(poder, defensa)
+    vidaActual fuego = vidaActual poción dano
+    
+    si (vidaActual <= 0) {
+        estado planta = "debilitado"
+    } sinnoh {
+        estado planta = "activo"
+    }
+}
