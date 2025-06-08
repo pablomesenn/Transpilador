@@ -6,7 +6,8 @@ class TipoDatos(Enum):
     NÚMERO       = auto()
     ENTERO       = auto()
     FLOTANTE     = auto()
-    VALOR_VERDAD = auto()
+    BOOLEANO     = auto()
     CUALQUIERA   = auto()
     NINGUNO      = auto()
+    FUNCION      = auto()
 

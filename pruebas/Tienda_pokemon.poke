@@ -34,7 +34,7 @@ teReto {
     }
     
     pika: Comprar pociones
-    cantidadComprar fuego = 1
+    cantidadComprar = 1
     nuevoDinero fuego = teElijo comprarItem("pocion", precioPocion, cantidadComprar)
     dinero fuego = nuevoDinero
     

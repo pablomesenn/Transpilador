@@ -42,19 +42,15 @@ class AnalizadorLexico:
 
         nodos_nuevos = []
 
-        while True:
-            
-            # EL BUCLE ANALIZA LA PARTE: (Comentario | Asignación | Función | Equipo)*
-            print("Tipo: " + str(self.componente_actual.tipo))
-            # ASIGNACIÓN
+        while self.componente_actual is not None:
+            print("Tipo:", self.componente_actual.tipo)
+
             if self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
                 nodos_nuevos.append(self.analizar_asignacion()) 
-            
-            # FUNCION
+
             elif self.componente_actual.tipo == TipoComponente.FUNCION:
                 nodos_nuevos.append(self.analizar_funcion())
 
-            # EQUIPO
             elif self.componente_actual.texto == "equipo":
                 nodos_nuevos.append(self.analizar_equipo())
 
@@ -62,29 +58,32 @@ class AnalizadorLexico:
                 break
         
         # PRINCIPAL
-        if self.componente_actual.texto == "teReto":
+        if self.componente_actual is not None and self.componente_actual.texto == "teReto":
+
             nodos_nuevos.append(self.analizar_principal())
-            
+      
         else:
-            raise Exception("Error de sintaxis: Se esperaba 'principal'")
+            encontrado = self.componente_actual.texto if self.componente_actual else "fin del archivo"
+            raise Exception(f"Error de sintaxis: Se esperaba 'teReto', pero se encontró '{encontrado}'")
 
         return NodoArbol(TipoNodo.PROGRAMA, nodos=nodos_nuevos) 
 
     def analizar_asignacion(self):
-        
         """
-        Asignacion ::= Identificador Tipo = (Literal | Expresión | Invocación)
+        Asignacion ::= Identificador (Tipo)? = (Literal | Expresión | Invocación)
         """
-        
+
         nodos_nuevos = []
 
         # El identificador es obligatorio al inicio
         identificador = self.verificar_identificador()
         nodos_nuevos.append(identificador)
 
-        # Verificar el tipo
-        tipo = self.verificar_tipo()
-        nodos_nuevos.append(tipo)
+        # Verificar si hay un tipo (opcional)
+        tipo = None
+        if self.componente_actual and self.componente_actual.tipo == TipoComponente.TIPO:
+            tipo = self.verificar_tipo()
+            nodos_nuevos.append(tipo)
 
         # Verificar el signo de igual
         self.verificar("=")
@@ -234,6 +233,27 @@ class AnalizadorLexico:
         
         return NodoArbol(TipoNodo.PARAMETROS, nodos=parametros)
 
+    def analizar_parametros_definicion(self):
+        """
+        ParametrosDefinicion ::= Identificador (',' Identificador)*
+        """
+
+        parametros = []
+
+        # Caso sin parámetros
+        if self.componente_actual.texto == ")":
+            return NodoArbol(TipoNodo.PARAMETROS, nodos=parametros)
+
+        # Primer parámetro
+        parametros.append(self.verificar_identificador())
+
+        # Comas adicionales
+        while self.componente_actual.texto == ",":
+            self.__pasar_siguiente_componente()
+            parametros.append(self.verificar_identificador())
+
+        return NodoArbol(TipoNodo.PARAMETROS, nodos=parametros)
+
     def analizar_valor(self):
         """
         Valor ::= (Identificador | Literal)
@@ -275,7 +295,12 @@ class AnalizadorLexico:
         self.verificar("(")
         self.__pasar_siguiente_componente()
         
-        parametros = self.analizar_parametros()
+        parametros = self.analizar_parametros_definicion()
+
+        print("Parámetros de la función:")
+        for p in parametros.nodos:
+            print(f"  - tipo: {p.tipo}, contenido: {p.contenido}")
+
         nodos_nuevos.append(parametros)
 
         self.verificar(")")
