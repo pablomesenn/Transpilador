@@ -18,17 +18,16 @@ class TablaSimbolos:
         self.profundidad -= 1
 
     def nuevo_registro(self, nodo):
-        tipo_extra = None
-        if hasattr(nodo, 'atributos') and 'tipo' in nodo.atributos:
-            tipo_extra = nodo.atributos['tipo']
-
-        self.simbolos.append({
+        tipo_extra = nodo.atributos.get('tipo') if hasattr(nodo, 'atributos') else None
+        entrada = {
             'nombre': nodo.contenido,
             'profundidad': self.profundidad,
             'referencia': nodo,
             'tipo': tipo_extra
-        })
-        print(f"[REGISTRO] {nodo.contenido} registrado con tipo {tipo_extra} en profundidad {self.profundidad}")
+        }
+        if 'parametros' in nodo.atributos:
+            entrada['parametros'] = nodo.atributos['parametros']
+        self.simbolos.append(entrada)
 
     def verificar_existencia(self, nombre):
         for registro in reversed(self.simbolos):
@@ -108,62 +107,106 @@ class VisitantePokeScript:
 
     def _visitar_equipo(self, nodo):
         """
-        Equipo ::= equipo Identificador { ... }
+        Equipo ::= equipo Identificador { Pokemon{1,6} }
+        Cada Pokémon viene como nodo TipoNodo.POKEMON
+                ├─ IDENTIFICADOR (nombre)
+                ├─ ENTERO        (vida)
+                └─ FLOTANTE      (peso)
         """
-        ident = nodo.nodos[0]  # El nombre del equipo
-        self.ts.nuevo_registro(ident)
+        # registrar el nombre del equipo
+        ident_equipo = nodo.nodos[0]
+        self.ts.nuevo_registro(ident_equipo)
 
+        # recorrer los miembros
+        for miembro in nodo.nodos[1:]:
+            if miembro.tipo != TipoNodo.POKEMON:
+                raise Exception("Se esperaba un nodo POKEMON dentro del equipo")
+
+            if len(miembro.nodos) != 3:
+                raise Exception(
+                    f"Miembro del equipo mal formado: se esperaban 3 nodos "
+                    f"(nombre, vida, peso) pero se obtuvieron {len(miembro.nodos)}"
+                )
+
+            # nombre, vida, peso
+            nombre_poke = miembro.nodos[0]          # IDENTIFICADOR
+            vida_poke   = miembro.nodos[1]          # ENTERO
+            peso_poke   = miembro.nodos[2]          # FLOTANTE
+
+            # visitar sus literales para anotar tipos
+            self.visitar(vida_poke)
+            self.visitar(peso_poke)
+
+            # opcional: guardar la ficha del Pokémon en la tabla si te interesa
+            nombre_poke.atributos['tipo'] = TipoDatos.CUALQUIERA
+            self.ts.nuevo_registro(nombre_poke)
+
+        # nada que devolver: el nodo EQUIPO no produce valor
+        nodo.atributos['tipo'] = TipoDatos.NINGUNO
 
     def _visitar_expresion(self, nodo):
         for n in nodo.nodos:
             self.visitar(n)
-
         tipos = [n.atributos.get('tipo') for n in nodo.nodos if 'tipo' in n.atributos]
-
         tipos_sin_cualquiera = [t for t in tipos if t != TipoDatos.CUALQUIERA]
 
         if not tipos_sin_cualquiera:
             nodo.atributos['tipo'] = TipoDatos.CUALQUIERA
-
         elif all(t == tipos_sin_cualquiera[0] for t in tipos_sin_cualquiera):
             nodo.atributos['tipo'] = tipos_sin_cualquiera[0]
-
         else:
             raise Exception("Tipos incompatibles en expresión")
 
+        # Validación adicional para operadores no compatibles con texto o booleanos
+        for t in tipos_sin_cualquiera:
+            if t in (TipoDatos.TEXTO, TipoDatos.BOOLEANO):
+                raise Exception("Operaciones no permitidas con tipo TEXTO o BOOLEANO")
+
+
 
     def _visitar_funcion(self, nodo):
-        """
-        Función ::= batalla Identificador (Parámetros) BloqueInstrucciones
-        """
         ident, parametros, bloque = nodo.nodos
 
-        # Registrar el identificador como una función
         ident.atributos['tipo'] = TipoDatos.FUNCION
+        ident.atributos['parametros'] = [p.contenido for p in parametros.nodos]
         self.ts.nuevo_registro(ident)
 
         self.ts.abrir_bloque()
         for param in parametros.nodos:
-            
             param.atributos['tipo'] = TipoDatos.CUALQUIERA
             self.ts.nuevo_registro(param)
 
-        # Visitar cuerpo
         self.visitar(bloque)
-
         self.ts.cerrar_bloque()
 
         nodo.atributos['tipo'] = bloque.atributos.get('tipo', TipoDatos.NINGUNO)
 
-
     def _visitar_invocacion(self, nodo):
-        ident = nodo.nodos[0]
-        args = nodo.nodos[1:]
+        ident        = nodo.nodos[0]
 
+        # --- NUEVO ---
+        if len(nodo.nodos) > 1 and nodo.nodos[1].tipo == TipoNodo.PARAMETROS:
+            params_node = nodo.nodos[1]
+            args_nodes  = params_node.nodos            # ← los argumentos reales
+        else:                                          # (por si la gramática cambiara)
+            args_nodes  = nodo.nodos[1:]
+        # --------------
+
+        # registro de la función
         reg = self.ts.verificar_existencia(ident.contenido)
-        
         if reg['tipo'] != TipoDatos.FUNCION:
             raise Exception(f"'{ident.contenido}' no es una función")
+
+        param_esperados = reg.get('parametros', [])
+        if len(args_nodes) != len(param_esperados):
+            raise Exception(
+                f"'{ident.contenido}' esperaba {len(param_esperados)} argumento(s), "
+                f"pero se dieron {len(args_nodes)}"
+            )
+
+        # verificar cada argumento
+        for arg in args_nodes:
+            self.visitar(arg)
         
     def _visitar_string(self, nodo):
         nodo.atributos['tipo'] = TipoDatos.TEXTO
