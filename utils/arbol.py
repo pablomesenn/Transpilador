@@ -16,7 +16,6 @@ class TipoNodo(Enum):
     FUNCION = auto()
     INVOCACION = auto()
     PARAMETROS = auto()
-    #PARAMETROS_INVOCACION = auto()
     INSTRUCCION = auto()
     REPETICION = auto()
     BIFURCACION = auto()
