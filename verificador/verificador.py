@@ -12,6 +12,8 @@ MAPEO_TIPO = {
     "hielo"  : TipoDatos.BOOLEANO,   # capturado / escapo
 }
 
+OPERADORES_NUMERICOS = {"ataque", "poción"}
+
 class TablaSimbolos:
     def __init__(self):
         self.profundidad = 0
@@ -125,7 +127,7 @@ class VisitantePokeScript:
 
     def _visitar_identificador(self, nodo):
         reg = self.ts.verificar_existencia(nodo.contenido)
-        nodo.atributos['tipo'] = reg.get('tipo_dato', TipoDatos.CUALQUIERA)
+        nodo.atributos['tipo'] = reg.get('tipo', TipoDatos.CUALQUIERA)
 
     def _visitar_equipo(self, nodo):
         """
@@ -166,23 +168,49 @@ class VisitantePokeScript:
         # nada que devolver: el nodo EQUIPO no produce valor
         nodo.atributos['tipo'] = TipoDatos.NINGUNO
 
-    def _visitar_expresion(self, nodo):
-        for n in nodo.nodos:
-            self.visitar(n)
-        tipos = [n.atributos.get('tipo') for n in nodo.nodos if 'tipo' in n.atributos]
-        tipos_sin_cualquiera = [t for t in tipos if t != TipoDatos.CUALQUIERA]
+    def _visitar_expresion(self, nodo: NodoArbol) -> None:
+        """
+        Expresión ::= término ( OPERADOR término )*
+        Solo se admiten operadores numéricos ('ataque', 'poción').
+        El tipo resultante se propaga; si aparece CUALQUIERA, el
+        resultado se mantiene como CUALQUIERA hasta que se resuelva.
+        """
+        # -- evaluar primer término
+        self.visitar(nodo.nodos[0])
+        current_type = nodo.nodos[0].atributos.get("tipo", TipoDatos.CUALQUIERA)
 
-        if not tipos_sin_cualquiera:
-            nodo.atributos['tipo'] = TipoDatos.CUALQUIERA
-        elif all(t == tipos_sin_cualquiera[0] for t in tipos_sin_cualquiera):
-            nodo.atributos['tipo'] = tipos_sin_cualquiera[0]
-        else:
-            raise Exception("Tipos incompatibles en expresión")
+        i = 1
+        while i < len(nodo.nodos):
+            op_node   = nodo.nodos[i]
+            term_node = nodo.nodos[i + 1]
 
-        # Validación adicional para operadores no compatibles con texto o booleanos
-        for t in tipos_sin_cualquiera:
-            if t in (TipoDatos.TEXTO, TipoDatos.BOOLEANO):
-                raise Exception("Operaciones no permitidas con tipo TEXTO o BOOLEANO")
+            self.visitar(term_node)
+            right_type = term_node.atributos.get("tipo", TipoDatos.CUALQUIERA)
+            op         = op_node.contenido
+
+            # ── solo 'ataque' y 'poción' son válidos
+            if op not in ("ataque", "poción"):
+                raise Exception(f"Operador no reconocido: '{op}'")
+
+            # ── ambos lados deben ser numéricos o CUALQUIERA
+            permitidos = (TipoDatos.NÚMERO, TipoDatos.FLOTANTE, TipoDatos.CUALQUIERA)
+            if current_type not in permitidos or right_type not in permitidos:
+                raise Exception(
+                    f"Operador '{op}' solo admite números "
+                    f"(izq={current_type.name}, der={right_type.name})"
+                )
+
+            # ── determinar tipo resultante
+            if TipoDatos.CUALQUIERA in (current_type, right_type):
+                current_type = TipoDatos.CUALQUIERA
+            elif TipoDatos.FLOTANTE in (current_type, right_type):
+                current_type = TipoDatos.FLOTANTE
+            else:
+                current_type = TipoDatos.NÚMERO
+
+            i += 2  # avanzar al siguiente operador
+
+        nodo.atributos["tipo"] = current_type
 
     def _visitar_funcion(self, nodo):
         ident, parametros, bloque = nodo.nodos
@@ -202,32 +230,41 @@ class VisitantePokeScript:
 
         nodo.atributos['tipo'] = bloque.atributos.get('tipo', TipoDatos.NINGUNO)
 
-    def _visitar_invocacion(self, nodo):
-        ident        = nodo.nodos[0]
+    def _visitar_invocacion(self, nodo: NodoArbol) -> None:
+        """
+        Invocación ::= teElijo IDENTIFICADOR (arg1, arg2, ...)
+        Estructura del ASA:
+            nodo.nodos[0] -> IDENTIFICADOR  (nombre función)
+            nodo.nodos[1] -> PARAMETROS     (hijos = argumentos)
+        """
+        ident_node = nodo.nodos[0]
 
-        # --- NUEVO ---
-        if len(nodo.nodos) > 1 and nodo.nodos[1].tipo == TipoNodo.PARAMETROS:
-            params_node = nodo.nodos[1]
-            args_nodes  = params_node.nodos            # ← los argumentos reales
-        else:                                          # (por si la gramática cambiara)
-            args_nodes  = nodo.nodos[1:]
-        # --------------
+        # --- recuperar la ficha de la función ---
+        ficha = self.ts.verificar_existencia(ident_node.contenido)
+        if ficha["tipo"] != TipoDatos.FUNCION:
+            raise Exception(f"'{ident_node.contenido}' no es una función")
 
-        # registro de la función
-        reg = self.ts.verificar_existencia(ident.contenido)
-        if reg['tipo'] != TipoDatos.FUNCION:
-            raise Exception(f"'{ident.contenido}' no es una función")
+        params_esperados = ficha.get("parametros", [])
 
-        param_esperados = reg.get('parametros', [])
-        if len(args_nodes) != len(param_esperados):
+        # --- recoger argumentos reales ---
+        if len(nodo.nodos) >= 2 and nodo.nodos[1].tipo == TipoNodo.PARAMETROS:
+            args_nodes = nodo.nodos[1].nodos
+        else:
+            args_nodes = []          # invocación sin paréntesis/args
+
+        # --- comprobar cantidad ---
+        if len(args_nodes) != len(params_esperados):
             raise Exception(
-                f"'{ident.contenido}' esperaba {len(param_esperados)} argumento(s), "
-                f"pero se dieron {len(args_nodes)}"
+                f"'{ident_node.contenido}' esperaba {len(params_esperados)} argumento(s), "
+                f"recibió {len(args_nodes)}"
             )
 
-        # verificar cada argumento
+        # --- verificar cada argumento ---
         for arg in args_nodes:
-            self.visitar(arg)
+            self.visitar(arg)        # esto anota su 'tipo'
+
+        # (si necesitaras devolver tipo de retorno, anótalo aquí)
+        nodo.atributos["tipo"] = ficha.get("retorno", TipoDatos.CUALQUIERA)
         
     def _visitar_string(self, nodo):
         nodo.atributos['tipo'] = TipoDatos.TEXTO

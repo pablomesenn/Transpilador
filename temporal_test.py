@@ -18,5 +18,6 @@ analizador.analizar()
 verificador = Verificador(analizador.asa)
 verificador.verificar()
 
+
 # 5. Si todo está bien:
 print("Verificación semántica completada sin errores.")

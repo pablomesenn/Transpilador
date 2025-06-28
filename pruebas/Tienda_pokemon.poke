@@ -5,7 +5,7 @@ dinero fuego = 1000
 precioPokeball agua = "200"
 precioPocion hielo = escapo
 cantidadPokeball planta = 0.01
-cantidadPocion planta = 0.02
+cantidadPocion planta = 2.1
 
 pika: Función para comprar un item
 batalla comprarItem(nombreItem, precio, cantidad) {
@@ -37,8 +37,13 @@ teReto {
     cantidadComprar = 1
     nuevoDinero fuego = teElijo comprarItem("pocion", precioPocion, cantidadComprar)
     dinero fuego = nuevoDinero
-    
+
+    prueba1 planta = 69.1
+    prueba2 agua = "aymerich"
+
+    prueba3 planta = prueba1 ataque 12
+
     si (dinero < 400) {
-        cantidadPocion planta = cantidadPocion ataque precioPocion
+        cantidadPocion planta = cantidadPocion ataque 12.1
     }
 }
