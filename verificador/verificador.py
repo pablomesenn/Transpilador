@@ -5,6 +5,13 @@ from utils.tipo_datos import TipoDatos
 
 TIPOS_POKEMON_VALIDOS = {"agua", "fuego", "planta","hielo"}
 
+MAPEO_TIPO = {
+    "fuego"  : TipoDatos.NÚMERO,     # enteros
+    "agua"   : TipoDatos.TEXTO,      # strings
+    "planta" : TipoDatos.FLOTANTE,   # números con punto
+    "hielo"  : TipoDatos.BOOLEANO,   # capturado / escapo
+}
+
 class TablaSimbolos:
     def __init__(self):
         self.profundidad = 0
@@ -53,52 +60,67 @@ class VisitantePokeScript:
         print(f"[VISITANDO] Nodo tipo: {nodo.tipo}, contenido: {getattr(nodo, 'contenido', '')}")
 
 
-    def _visitar_asignacion(self, nodo):
+    def _visitar_asignacion(self, nodo: NodoArbol) -> None:
+        """
+        Maneja:
+            Identificador PalabraTipo = (Literal | Expresión | Invocación)
+            ó
+            Identificador = (Literal | Expresión | Invocación)
+        Valida que el valor coincida con la semántica fijada por la 'PalabraTipo'.
+        """
+
+        
         if len(nodo.nodos) == 3:
-            ident, tipo, valor = nodo.nodos
+            ident_node, tipo_token, valor_node = nodo.nodos
 
-            # Visitar primero el valor
-            self.visitar(valor)
-            tipo_valor = valor.atributos.get('tipo', TipoDatos.CUALQUIERA)
+            
+            if tipo_token.contenido not in MAPEO_TIPO:
+                raise Exception(f"Tipo desconocido: '{tipo_token.contenido}'")
 
-            # Determinar tipo semántico
-            if tipo.contenido in TIPOS_POKEMON_VALIDOS:
-                tipo_semantico = TipoDatos.NÚMERO if tipo_valor != TipoDatos.TEXTO else TipoDatos.TEXTO
-            elif tipo.contenido in [e.name for e in TipoDatos]:
-                tipo_semantico = TipoDatos[tipo.contenido]
-            else:
-                raise Exception(f"Tipo no reconocido: '{tipo.contenido}'")
+            tipo_semantico = MAPEO_TIPO[tipo_token.contenido]        
 
-            ident.atributos['tipo'] = tipo_semantico
-            self.ts.nuevo_registro(ident)
+            self.visitar(valor_node)
+            tipo_valor = valor_node.atributos.get("tipo", TipoDatos.CUALQUIERA)
 
-            if tipo_valor != TipoDatos.CUALQUIERA and tipo_valor != tipo_semantico:
-                raise Exception(f"Tipo incompatible: se esperaba '{tipo_semantico.name}' pero se obtuvo '{tipo_valor.name}' en la asignación a '{ident.contenido}'")
+            if tipo_valor not in (TipoDatos.CUALQUIERA, tipo_semantico):
+                raise Exception(
+                    f"Tipo incompatible: '{ident_node.contenido}' es '{tipo_token.contenido}' "
+                    f"({tipo_semantico.name}) pero se le asigna {tipo_valor.name}"
+                )
 
-            nodo.atributos['tipo'] = tipo_semantico
+            ident_node.atributos["tipo"] = tipo_semantico
+            self.ts.nuevo_registro(ident_node)
+            nodo.atributos["tipo"] = tipo_semantico
+            return
 
-        elif len(nodo.nodos) == 2:
-            ident, valor = nodo.nodos
+        
+        if len(nodo.nodos) == 2:
+            ident_node, valor_node = nodo.nodos
 
-            self.visitar(valor)
-            tipo_valor = valor.atributos.get('tipo', TipoDatos.CUALQUIERA)
+            
+            self.visitar(valor_node)
+            tipo_valor = valor_node.atributos.get("tipo", TipoDatos.CUALQUIERA)
 
-            # Registrar si no existe
+            
             try:
-                reg = self.ts.verificar_existencia(ident.contenido)
-                tipo_semantico = reg.get('tipo', TipoDatos.CUALQUIERA)
+                reg = self.ts.verificar_existencia(ident_node.contenido)
+                tipo_semantico = reg.get("tipo", TipoDatos.CUALQUIERA)
             except Exception:
+            
                 tipo_semantico = tipo_valor
-                ident.atributos['tipo'] = tipo_semantico
-                self.ts.nuevo_registro(ident)
+                ident_node.atributos["tipo"] = tipo_semantico
+                self.ts.nuevo_registro(ident_node)
 
-            if tipo_valor != TipoDatos.CUALQUIERA and tipo_valor != tipo_semantico:
-                raise Exception(f"Tipo incompatible: se esperaba '{tipo_semantico.name}' pero se obtuvo '{tipo_valor.name}' en la asignación a '{ident.contenido}'")
+            if tipo_valor not in (TipoDatos.CUALQUIERA, tipo_semantico):
+                raise Exception(
+                    f"Tipo incompatible: '{ident_node.contenido}' era {tipo_semantico.name} "
+                    f"y se le intenta asignar {tipo_valor.name}"
+                )
 
-            nodo.atributos['tipo'] = tipo_semantico
+            nodo.atributos["tipo"] = tipo_semantico
+            return
 
-        else:
-            raise Exception("Asignación mal formada")
+        raise Exception("Asignación mal formada")
     
 
     def _visitar_identificador(self, nodo):
@@ -162,12 +184,11 @@ class VisitantePokeScript:
             if t in (TipoDatos.TEXTO, TipoDatos.BOOLEANO):
                 raise Exception("Operaciones no permitidas con tipo TEXTO o BOOLEANO")
 
-
-
     def _visitar_funcion(self, nodo):
         ident, parametros, bloque = nodo.nodos
 
         ident.atributos['tipo'] = TipoDatos.FUNCION
+        
         ident.atributos['parametros'] = [p.contenido for p in parametros.nodos]
         self.ts.nuevo_registro(ident)
 

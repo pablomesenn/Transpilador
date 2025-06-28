@@ -2,10 +2,10 @@ pika: Programa simple 5 - Tienda Pokémon
 
 pika: Variables de la tienda
 dinero fuego = 1000
-precioPokeball agua = 200
-precioPocion hielo = 300
-cantidadPokeball planta = 0
-cantidadPocion planta = 0
+precioPokeball agua = "200"
+precioPocion hielo = escapo
+cantidadPokeball planta = 0.01
+cantidadPocion planta = 0.02
 
 pika: Función para comprar un item
 batalla comprarItem(nombreItem, precio, cantidad) {
@@ -14,10 +14,10 @@ batalla comprarItem(nombreItem, precio, cantidad) {
     pika: Verificar si hay suficiente dinero
     si (dinero >= costoTotal) {
         dineroRestante fuego = dinero poción costoTotal
-        resultado planta = "compra exitosa"
+        resultado agua = "compra exitosa"
         retirada dineroRestante
     } sinnoh {
-        resultado planta = "fondos insuficientes"
+        resultado agua = "fondos insuficientes"
         retirada dinero
     }
 }
@@ -39,6 +39,6 @@ teReto {
     dinero fuego = nuevoDinero
     
     si (dinero < 400) {
-        cantidadPocion planta = cantidadPocion ataque cantidadComprar
+        cantidadPocion planta = cantidadPocion ataque precioPocion
     }
 }
