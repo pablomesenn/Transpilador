@@ -32,7 +32,10 @@ class TablaSimbolos:
             'nombre': nodo.contenido,
             'profundidad': self.profundidad,
             'referencia': nodo,
-            'tipo': tipo_extra
+            'tipo': tipo_extra,
+            'decl_linea': getattr(nodo, "linea", None),
+            'decl_col'  : getattr(nodo, "columna", None),
+            'id'        : id(nodo)
         }
         if 'parametros' in nodo.atributos:
             entrada['parametros'] = nodo.atributos['parametros']
@@ -60,7 +63,6 @@ class VisitantePokeScript:
             for hijo in nodo.nodos:
                 self.visitar(hijo)
         print(f"[VISITANDO] Nodo tipo: {nodo.tipo}, contenido: {getattr(nodo, 'contenido', '')}")
-
 
     def _visitar_asignacion(self, nodo: NodoArbol) -> None:
         """
@@ -128,6 +130,7 @@ class VisitantePokeScript:
     def _visitar_identificador(self, nodo):
         reg = self.ts.verificar_existencia(nodo.contenido)
         nodo.atributos['tipo'] = reg.get('tipo', TipoDatos.CUALQUIERA)
+        nodo.atributos["def_pos"] = (reg["decl_linea"], reg["decl_col"])
 
     def _visitar_equipo(self, nodo):
         """

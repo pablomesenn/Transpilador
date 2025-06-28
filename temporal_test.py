@@ -18,6 +18,7 @@ analizador.analizar()
 verificador = Verificador(analizador.asa)
 verificador.verificar()
 
+analizador.asa.imprimir_preorden_decorado()
 
 # 5. Si todo está bien:
 print("Verificación semántica completada sin errores.")

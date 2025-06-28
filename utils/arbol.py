@@ -116,26 +116,52 @@ class ArbolSintaxisAbstracta:
             print("  " * nivel + nodo.nodeToStr())
             for hijo in nodo.nodos:
                 self.__preorden(hijo, nivel + 1)
+    
+    def imprimir_preorden_decorado(self):
+        def _walk(nd, lvl):
+            if nd is None:
+                return
+
+            indent = "|   " * (lvl - 1) + ("-> " if lvl else "")
+            s = f"{nd.tipo.name}"
+            if nd.contenido is not None:
+                s += f"('{nd.contenido}')"
+
+            extras = []
+            if "tipo" in nd.atributos:
+                extras.append(f"tipo={nd.atributos['tipo'].name if hasattr(nd.atributos['tipo'], 'name') else nd.atributos['tipo']}")
+            if extras:
+                s += " [" + ", ".join(extras) + "]"
+
+            if nd.tipo.name == "IDENTIFICADOR" and "def_pos" in nd.atributos:
+                ln, col = nd.atributos["def_pos"]
+                s += f"  ->  línea {ln}:{col}"
+
+            print(indent + s)
+            for h in nd.nodos:
+                _walk(h, lvl + 1)
+
+        _walk(self.raiz, 0)
+
 
 # PRUEBAS 
 
 if __name__ == '__main__':
-    raiz = NodoArbol(TipoNodo.PROGRAMA, "Inicio")
-    hijo1 = NodoArbol(TipoNodo.ASIGNACION, "x = 1")
-    hijo2 = NodoArbol(TipoNodo.ASIGNACION, "y = 2")
-    hijo3 = NodoArbol(TipoNodo.EXPRESION, "x + y")
-    hijo4 = NodoArbol(TipoNodo.BOOLEANOS, "1")
-    hijo5 = NodoArbol(TipoNodo.COMPARACION, "2")
-    hijo6 = NodoArbol(TipoNodo.COMPARADOR, "3")
+    # construimos un arbol mini para ver la salida
+    raiz  = NodoArbol(TipoNodo.PROGRAMA)
+    ident = NodoArbol(TipoNodo.IDENTIFICADOR, "dinero",
+                      atributos={"tipo":"NÚMERO", "def_pos": (4,1)})
+    ent   = NodoArbol(TipoNodo.ENTERO, "1000", atributos={"tipo":"NÚMERO"})
+    asig  = NodoArbol(TipoNodo.ASIGNACION, nodos=[ident, ent],
+                      atributos={"tipo":"NÚMERO"})
+    raiz.nodos.append(asig)
 
-    arbol = ArbolSintaxisAbstracta()
-    arbol.insertar_nodo(None, raiz)
-    arbol.insertar_nodo(raiz, hijo1)
-    arbol.insertar_nodo(raiz, hijo2)
-    arbol.insertar_nodo(raiz, hijo3)
-    arbol.insertar_nodo(hijo1, hijo4)
-    arbol.insertar_nodo(hijo2, hijo5)
-    arbol.insertar_nodo(hijo3, hijo6)
+    asa = ArbolSintaxisAbstracta()
+    asa.raiz = raiz
 
-    arbol.imprimir_preorden()
+    print("\n=== pre-orden clásico ===")
+    asa.imprimir_preorden()
+
+    print("\n=== pre-orden decorado ===")
+    asa.imprimir_preorden_decorado()
  
