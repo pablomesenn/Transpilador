@@ -55,6 +55,9 @@ class NodoArbol():
         self.nodos = nodos if nodos is not None else []
         self.atributos = copy.deepcopy(atributos if atributos is not None else {})
 
+    def visitar(self, visitador):
+        return visitador.visitar(self)
+
     def nodeToStr(self):
         resultado = '{:30}\t'.format(self.tipo)
         

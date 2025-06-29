@@ -104,51 +104,93 @@ class VisitanteGenerador:
         """
         Programa ::= (Comentario | Asignación | Función | Equipo)* Principal
         """
-        
-        pass
+
+        instrucciones = []
+
+        for nodo_hijo in nodo.nodos:
+            instrucciones.append(nodo_hijo.visitar(self)) 
+
+        return '\n'.join(instrucciones)
 
     def __visitar_asignacion(self, nodo: NodoArbol):
         """
         Asignación ::= Identificador Tipo = (Literal | Expresión | Invocación)
         """
 
-        pass
+        resultado = """{} = {}"""
+
+        instrucciones = []
+
+        for nodo_hijo in nodo.nodos:
+            instrucciones.append(nodo_hijo.visitar(self))
+
+        return resultado.format(instrucciones[0], instrucciones[2]) # instrucciones[1] es el tipo    
 
     def __visitar_tipo(self, nodo: NodoArbol):
         """
         Tipo ::= planta | fuego | agua | hielo
         """
 
-        pass
+        return ''  # No se usa directamente en el código generado
 
     def __visitar_expresion(self, nodo: NodoArbol):
         """
         ExpresiónSimplificada ::= Término (Operador Término)*
+        Término ::= Literal | Identificador | Invocación
         """
 
-        pass
+        instrucciones = []
 
+        for nodo_hijo in nodo.nodos:
+            instrucciones.append(nodo_hijo.visitar(self))
+
+        return ' '.join(instrucciones)
         
     def __visitar_funcion(self, nodo: NodoArbol):
         """
         Función ::= batalla Identificador (Parámetros) BloqueInstrucciones
         """
         
-        pass
+        resultado = """\ndef {}({}):\n{}"""
+
+        instrucciones = []
+
+        for nodo_hijo in nodo.nodos:
+            instrucciones.append(nodo_hijo.visitar(self))
+
+        # instrucciones[0] es el identificador, instrucciones[1] son los parámetros, instrucciones[2] es el bloque de instrucciones
+        return resultado.format(instrucciones[0], instrucciones[1], instrucciones[2])
 
     def __visitar_invocacion(self, nodo: NodoArbol):
         """
         Invocación ::= teElijo Identificador (Parámetros)
         """
         
-        pass
+        resultado = "{}({})"
+
+        instrucciones = []
+
+        for nodo_hijo in nodo.nodos:
+            instrucciones.append(nodo_hijo.visitar(self))
+
+        # instrucciones[0] es el identificador, instrucciones[1] son los parámetros
+        return resultado.format(instrucciones[0], instrucciones[1])
 
     def __visitar_parametros(self, nodo: NodoArbol):
         """
         Parámetros ::= Valor (',' Valor)*
         """
 
-        pass
+        parametros = []
+
+        for nodo_hijo in nodo.nodos:
+            parametros.append(nodo_hijo.visitar(self))
+
+        if len(parametros) > 0:
+            return ','.join(parametros)
+
+        else:
+            return ''
 
     def __visitar_instruccion(self, nodo: NodoArbol):
         """
