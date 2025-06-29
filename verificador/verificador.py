@@ -15,41 +15,71 @@ MAPEO_TIPO = {
 OPERADORES_NUMERICOS = {"ataque", "poción"}
 
 class TablaSimbolos:
+    """
+    Estructura de soporte para el análisis semántico.
+    Mantiene la pila de entornos y permite registrar / consultar símbolos.
+    Imprime “instantáneas” cada vez que cambia.
+    """
+
     def __init__(self):
-        self.profundidad = 0
-        self.simbolos = []
+        self.profundidad: int = 0          # nivel del bloque actual
+        self.simbolos:   list = []         # todos los registros (cada uno es un dict)
 
-    def abrir_bloque(self):
+    # ------------------------------------------------------------------ utilidades internas
+    def _dump(self, encabezado: str) -> None:
+        """Imprime la tabla completa (o un mensaje) después de cada operación."""
+        print(f'\n{encabezado}')
+        print(f'   PROF  NOMBRE            TIPO')
+        print(f'   ----  ----------------  ----------------')
+
+        for reg in self.simbolos:
+            tipo = reg["tipo"].name if reg["tipo"] else "?"
+            print(f'   {reg["profundidad"]:<4}  {reg["nombre"]:<16}  {tipo}')
+
+    # ------------------------------------------------------------------ manejo de bloques
+    def abrir_bloque(self) -> None:
         self.profundidad += 1
+        self._dump(f'=== Abro bloque  (profundidad {self.profundidad})')
 
-    def cerrar_bloque(self):
-        self.simbolos = [s for s in self.simbolos if s['profundidad'] != self.profundidad]
+    def cerrar_bloque(self) -> None:
+        # elimina símbolos de la profundidad actual
+        self.simbolos = [s for s in self.simbolos if s["profundidad"] != self.profundidad]
+        self._dump(f'=== Cierro bloque (profundidad {self.profundidad})')
         self.profundidad -= 1
 
-    def nuevo_registro(self, nodo):
+    # ------------------------------------------------------------------ registro y consultas
+    def nuevo_registro(self, nodo) -> None:
         tipo_extra = nodo.atributos.get('tipo') if hasattr(nodo, 'atributos') else None
+
         entrada = {
-            'nombre': nodo.contenido,
+            'nombre'     : nodo.contenido,
             'profundidad': self.profundidad,
-            'referencia': nodo,
-            'tipo': tipo_extra,
-            'decl_linea': getattr(nodo, "linea", None),
-            'decl_col'  : getattr(nodo, "columna", None),
-            'id'        : id(nodo)
+            'referencia' : nodo,
+            'tipo'       : tipo_extra,
+            'decl_linea'  : getattr(nodo, 'linea', None),
+            'decl_col'    : getattr(nodo, 'columna', None)
         }
         if 'parametros' in nodo.atributos:
             entrada['parametros'] = nodo.atributos['parametros']
-        self.simbolos.append(entrada)
 
-    def verificar_existencia(self, nombre):
-        for registro in reversed(self.simbolos):
-            if registro['nombre'] == nombre:
-                return registro
+        # Verificar redeclaración en el mismo nivel
+        for reg in self.simbolos:
+            if reg['nombre'] == entrada['nombre'] and reg['profundidad'] == self.profundidad:
+                raise Exception(f"Redeclaración de '{entrada['nombre']}' en el mismo bloque")
+
+        self.simbolos.append(entrada)
+        self._dump(f'+++ Nuevo símbolo -> {entrada["nombre"]}:{tipo_extra.name if tipo_extra else "?"}')
+
+    def verificar_existencia(self, nombre: str) -> dict:
+        for reg in reversed(self.simbolos):
+            if reg['nombre'] == nombre:
+                return reg
         raise Exception(f"Error semántico: '{nombre}' no ha sido declarado")
 
-    def verificar_tipo_valido(self, tipo):
-        if tipo not in TIPOS_POKEMON_VALIDOS:
-            raise Exception(f"Tipo de Pokémon inválido: '{tipo}'")
+    def verificar_tipo_valido(self, lexema_tipo: str, conjunto_validos) -> None:
+        if lexema_tipo not in conjunto_validos:
+            raise Exception(f"Tipo de Pokémon inválido: '{lexema_tipo}'")
+
 
 class VisitantePokeScript:
     def __init__(self, tabla_simbolos):
@@ -62,7 +92,7 @@ class VisitantePokeScript:
         else:
             for hijo in nodo.nodos:
                 self.visitar(hijo)
-        print(f"[VISITANDO] Nodo tipo: {nodo.tipo}, contenido: {getattr(nodo, 'contenido', '')}")
+        
 
     def _visitar_asignacion(self, nodo: NodoArbol) -> None:
         """

@@ -35,8 +35,8 @@ teReto {
     
     pika: Comprar pociones
     cantidadComprar = 1
-    nuevoDinero fuego = teElijo comprarItem("pocion", precioPocion, cantidadComprar)
-    dinero fuego = nuevoDinero
+    nuevoDinero = teElijo comprarItem("pocion", precioPocion, cantidadComprar)
+    dinero = nuevoDinero
 
     prueba1 planta = 69.1
     prueba2 agua = "aymerich"
