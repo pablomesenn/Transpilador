@@ -12,40 +12,40 @@ class VisitanteGenerador:
         resultado = ""
 
         if nodo.tipo == TipoNodo.PROGRAMA:
-            return
+            resultado = self.__visitar_programa(nodo)
 
         elif nodo.tipo == TipoNodo.ASIGNACION:
-            return
+            resultado = self.__visitar_asignacion(nodo)
         
         elif nodo.tipo == TipoNodo.TIPO:
-            return
+            resultado = self.__visitar_tipo(nodo)
         
         elif nodo.tipo == TipoNodo.EXPRESION:
-            return
+            resultado = self.__visitar_expresion(nodo)
         
         elif nodo.tipo == TipoNodo.FUNCION:
-            return
+            resultado = self.__visitar_funcion(nodo)
         
         elif nodo.tipo == TipoNodo.INVOCACION:
-            return
+            resultado = self.__visitar_invocacion(nodo)
         
         elif nodo.tipo == TipoNodo.PARAMETROS:
-            return
+            resultado = self.__visitar_parametros(nodo)
         
         elif nodo.tipo == TipoNodo.INSTRUCCION:
-            return
+            resultado = self.__visitar_instruccion(nodo)
         
         elif nodo.tipo == TipoNodo.REPETICION:
-            return
+            resultado = self.__visitar_repeticion(nodo)
         
         elif nodo.tipo == TipoNodo.BIFURCACION:
-            return
+            resultado = self.__visitar_bifurcacion(nodo)
         
         elif nodo.tipo == TipoNodo.SI: 
-            return
+            resultado = self.__visitar_si(nodo)
         
         elif nodo.tipo == TipoNodo.SINNOH:
-            return
+            resultado = self.__visitar_sinnoh(nodo)
         
         elif nodo.tipo == TipoNodo.OPERADOR_LOGICO:
             return
@@ -190,7 +190,7 @@ class VisitanteGenerador:
             return ','.join(parametros)
 
         else:
-            return ''
+            return ''   
 
     def __visitar_instruccion(self, nodo: NodoArbol):
         """
@@ -201,35 +201,75 @@ class VisitanteGenerador:
                     | Retorno) 
         """
         
-        pass
+        valor = ""
+
+        for nodo_hijo in nodo.nodos:
+            valor += nodo_hijo.visitar(self)
+
+        return valor
 
     def __visitar_repeticion(self, nodo: NodoArbol):
         """
         Repetición ::= turnos (Condición) BloqueInstrucciones
         """
 
-        pass
+        resultado = """while {}:\n{}"""
 
-    def __visitar_bifurcacion(self, nodo: NodoArbol):
+        instrucciones = []
+
+        for nodo_hijo in nodo.nodos:
+            instrucciones.append(nodo_hijo.visitar(self))
+
+        # instrucciones[0] es la condición, instrucciones[1] es el bloque de instrucciones 
+        return resultado.format(instrucciones[0], instrucciones[1])   
+
+    def __visitar_bifurcación(self, nodo_actual):
         """
         Bifurcación ::= Si (Sinnoh)?
         """
 
-        pass
+        resultado = """{}{}"""
+
+        instrucciones = []
+
+        for nodo in nodo_actual.nodos:
+            instrucciones.append(nodo.visitar(self))
+
+        # Se asegura que haya dos elementos en la lista
+        if len(instrucciones) == 1:
+            instrucciones.append('')  # sinnoh no existe
+
+        return resultado.format(instrucciones[0], instrucciones[1])
 
     def __visitar_si(self, nodo: NodoArbol):
         """
         Si ::= si (Condición) BloqueInstrucciones
         """
 
-        pass
+        resultado = """if {}:\n{}"""
+
+        instrucciones = []
+
+        for nodo_hijo in nodo.nodos:
+            instrucciones.append(nodo_hijo.visitar(self))
+
+        # instrucciones[0] es la condición, instrucciones[1] es el bloque de instrucciones
+        return resultado.format(instrucciones[0], instrucciones[1])  
 
     def __visitar_sinnoh(self, nodo: NodoArbol):
         """
         Sinnoh ::= Sinnoh BloqueInstrucciones
         """
 
-        pass
+        resultado = """else:\n{}"""
+
+        instrucciones = []
+
+        for nodo_hijo in nodo.nodos:
+            instrucciones.append(nodo_hijo.visitar(self))
+
+        # instrucciones[0] es el bloque de instrucciones
+        return resultado.format(instrucciones[0])
 
     def __visitar_operador_logico(self, nodo: NodoArbol):
         """
