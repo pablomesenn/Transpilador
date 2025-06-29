@@ -42,9 +42,9 @@
 
 - Comparación       ::= Valor Comparador Valor
 
-- Valor             ::= (Identificador | Literal)
++ Valor             ::= (Identificador | Literal)
 
-Retorno           ::= retirada Valor
++ Retorno           ::= retirada Valor
 
 -- Literal           ::= Entero | Flotante | String | Booleano 
 
