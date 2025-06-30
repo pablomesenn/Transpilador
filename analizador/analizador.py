@@ -407,7 +407,7 @@ class AnalizadorLexico:
         self.__pasar_siguiente_componente()
 
         # Instrucciones dentro del bloque, pueden ser 0 o más
-        while self.componente_actual.texto in ['turnos', 'si', 'sinnoh', 'retirada'] or self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
+        while self.componente_actual.texto in ['turnos', 'si', 'sinnoh', 'retirada', 'teElijo'] or self.componente_actual.tipo == TipoComponente.IDENTIFICADOR:
             nodos_nuevos.append(self.analizar_instruccion())
 
         # Verificar el token '}'

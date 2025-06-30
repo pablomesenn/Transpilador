@@ -10,6 +10,7 @@ class Generador:
         # Ambiente estándar con funciones útiles para el lenguaje Pokémon
         self.ambiente_estandar = """# Código generado automáticamente desde el lenguaje Pokémon
 # Funciones auxiliares del ambiente estándar
+import random
 
 def mostrar(mensaje):
     \"\"\"Función para mostrar mensajes en pantalla\"\"\"
@@ -25,6 +26,11 @@ def entrenar_pokemon(pokemon, incremento_nivel=1):
         pokemon["nivel"] += incremento_nivel
         pokemon["hp"] += incremento_nivel * 10
     return pokemon
+
+def numero_aleatorio(minimo=1, maximo=10):
+    \"\"\"Función para generar un número aleatorio\"\"\"
+    return random.randint(minimo, maximo)
+
 
 # Inicio del código del usuario
 """

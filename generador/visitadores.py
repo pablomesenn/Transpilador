@@ -4,7 +4,7 @@ class VisitanteGenerador:
 
     def __init__(self):
         self.tabuladores = 0
-
+        
     def visitar(self, nodo: NodoArbol):
         """
         Método que se llama para visitar un nodo del árbol.
@@ -161,7 +161,7 @@ class VisitanteGenerador:
         nombre = instrucciones[0] if len(instrucciones) > 0 else "funcion_sin_nombre"
         parametros = instrucciones[1] if len(instrucciones) > 1 else ""
         
-        return f"{nombre}({parametros})"
+        return f"{self.__obtener_indentacion()}{nombre}({parametros})"
 
     def __visitar_parametros(self, nodo: NodoArbol):
         """

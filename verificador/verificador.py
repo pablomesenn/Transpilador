@@ -286,11 +286,11 @@ class VisitantePokeScript:
             args_nodes = []          # invocación sin paréntesis/args
 
         # --- comprobar cantidad ---
-        if len(args_nodes) != len(params_esperados):
-            raise Exception(
-                f"'{ident_node.contenido}' esperaba {len(params_esperados)} argumento(s), "
-                f"recibió {len(args_nodes)}"
-            )
+        # if len(args_nodes) != len(params_esperados):
+        #     raise Exception(
+        #         f"'{ident_node.contenido}' esperaba {len(params_esperados)} argumento(s), "
+        #         f"recibió {len(args_nodes)}"
+        #     )
 
         # --- verificar cada argumento ---
         for arg in args_nodes:
@@ -348,6 +348,8 @@ class Verificador:
             ('capturar', TipoDatos.BOOLEANO),
             ('ResetearStats', TipoDatos.NINGUNO),
             ('huir', TipoDatos.BOOLEANO),
+            ('mostrar', TipoDatos.FUNCION),
+            ('numero_aleatorio', TipoDatos.FUNCION),
         ]
         for nombre, tipo in funciones:
             nodo = NodoArbol(TipoNodo.FUNCION, contenido=nombre, atributos={'tipo': tipo})

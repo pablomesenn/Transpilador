@@ -1,0 +1,60 @@
+pika: Carrera de Caracoles Simple en el Lenguaje Pokémon
+pika: Programa que simula una carrera de caracoles usando números aleatorios
+
+pika: Variables de los caracoles (posiciones iniciales)
+caracolA fuego = 0
+caracolB fuego = 0
+caracolC fuego = 0
+metaCarrera fuego = 20
+ganador agua = ""
+
+pika: Programa principal
+teReto {
+    teElijo mostrar("¡Bienvenidos a la Carrera de Caracoles!")
+    teElijo mostrar("Los caracoles A, B y C competirán hasta llegar a la meta (20)")
+    
+    pika: Loop principal de la carrera
+    turnos (ganador == "") {
+        teElijo mostrar("--- Nueva ronda ---")
+        
+        pika: Generar avances aleatorios para cada caracol
+        avanceA fuego = teElijo numero_aleatorio(1, 3)
+        avanceB fuego = teElijo numero_aleatorio(1, 3)
+        avanceC fuego = teElijo numero_aleatorio(1, 3)
+        
+        pika: Actualizar posiciones
+        caracolA fuego = caracolA ataque avanceA
+        caracolB fuego = caracolB ataque avanceB
+        caracolC fuego = caracolC ataque avanceC
+        
+        pika: Mostrar estado actual
+        teElijo mostrar("Caracol A: ")
+        teElijo mostrar(caracolA)
+        teElijo mostrar("Caracol B: ")
+        teElijo mostrar(caracolB)
+        teElijo mostrar("Caracol C: ")
+        teElijo mostrar(caracolC)
+        
+        pika: Verificar ganador
+        si (caracolA >= metaCarrera) {
+            ganador agua = "Caracol A"
+        }
+        
+        si (caracolB >= metaCarrera) {
+            si (ganador == "") {
+                ganador agua = "Caracol B"
+            }
+        }
+        
+        si (caracolC >= metaCarrera) {
+            si (ganador == "") {
+                ganador agua = "Caracol C"
+            }
+        }
+    }
+    
+    pika: Anunciar ganador
+    teElijo mostrar("¡¡¡ TENEMOS GANADOR !!!")
+    teElijo mostrar("El ganador es: ")
+    teElijo mostrar(ganador)
+}

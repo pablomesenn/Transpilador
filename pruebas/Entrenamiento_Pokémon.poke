@@ -2,8 +2,8 @@ pika: Programa simple 2 - Entrenamiento de Pokémon
 
 pika: Estadísticas iniciales
 nivel fuego = 5
-experiencia agua = 0
-expNecesaria planta = 100
+experiencia fuego = 0
+expNecesaria planta = 100.01
 
 pika: Función para ganar experiencia
 batalla ganarExperiencia(nivActual) {
@@ -13,7 +13,7 @@ batalla ganarExperiencia(nivActual) {
 
 pika: Equipo del entrenador
 equipo EquipoNovato {
-    Bulbasaur {15, 6.9}
+    pokeBulbasaur {15, 6.0}
 }
 
 pika: Programa principal
@@ -23,13 +23,13 @@ teReto {
     pika: Ciclo de entrenamiento
     turnos (contador < 3) {
         expGanada fuego = teElijo ganarExperiencia(nivel)
-        experiencia agua = experiencia ataque expGanada
+        experiencia fuego = experiencia ataque expGanada
         contador fuego = contador ataque 1
     }
     
     pika: Verificar si subió de nivel
     si (experiencia >= expNecesaria) {
         nivel fuego = nivel ataque 1
-        experiencia agua = experiencia poción expNecesaria
+        experiencia planta = experiencia poción expNecesaria
     }
 }

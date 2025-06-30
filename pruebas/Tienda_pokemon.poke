@@ -2,7 +2,7 @@ pika: Programa simple 5 - Tienda Pokémon
 
 pika: Variables de la tienda
 dinero fuego = 1000
-precioPokeball agua = "200"
+precioPokeball fuego = 200
 precioPocion hielo = escapo
 cantidadPokeball planta = 0.01
 cantidadPocion planta = 2.1
