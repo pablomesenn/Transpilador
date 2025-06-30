@@ -135,10 +135,6 @@ class ArbolSintaxisAbstracta:
             if extras:
                 s += " [" + ", ".join(extras) + "]"
 
-            if nd.tipo.name == "IDENTIFICADOR" and "def_pos" in nd.atributos:
-                ln, col = nd.atributos["def_pos"]
-                s += f"  ->  línea {ln}:{col}"
-
             print(indent + s)
             for h in nd.nodos:
                 _walk(h, lvl + 1)
